@@ -44,11 +44,15 @@ export struct QuoteCapsule {
     if (this.quote === undefined || this.quote.quoteTimestamp <= 0) {
       return '--:--:--'
     }
-    const date: Date = new Date(this.quote.quoteTimestamp)
-    const hour: string = date.getHours().toString().padStart(2, '0')
-    const minute: string = date.getMinutes().toString().padStart(2, '0')
-    const second: string = date.getSeconds().toString().padStart(2, '0')
+    const date: Date = new Date(this.quote.quoteTimestamp + 8 * 60 * 60 * 1000)
+    const hour: string = date.getUTCHours().toString().padStart(2, '0')
+    const minute: string = date.getUTCMinutes().toString().padStart(2, '0')
+    const second: string = date.getUTCSeconds().toString().padStart(2, '0')
     return `${hour}:${minute}:${second}`
+  }
+
+  private priceMetric(value: number | undefined): string {
+    return value === undefined || value <= 0 ? '--' : value.toFixed(2)
   }
 
   build() {
@@ -163,6 +167,21 @@ export struct QuoteCapsule {
                 .fontColor(this.changeColor())
             }
             .alignItems(HorizontalAlign.Start)
+          }
+          .width('100%')
+
+          Row() {
+            Text(`今开 ${this.priceMetric(this.quote?.open)}`)
+              .fontSize(10)
+              .fontColor('#98A4B7')
+            Blank()
+            Text(`最高 ${this.priceMetric(this.quote?.high)}`)
+              .fontSize(10)
+              .fontColor('#FF8990')
+            Blank()
+            Text(`最低 ${this.priceMetric(this.quote?.low)}`)
+              .fontSize(10)
+              .fontColor('#5DDBAA')
           }
           .width('100%')
 

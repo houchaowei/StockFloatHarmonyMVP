@@ -57,17 +57,24 @@ export class StockQuote {
   name: string
   price: number
   previousClose: number
+  open: number
+  high: number
+  low: number
   change: number
   changePercent: number
   quoteTimestamp: number
   fetchedTimestamp: number
 
   constructor(symbol: StockSymbol, name: string, price: number, previousClose: number,
-    change: number, changePercent: number, quoteTimestamp: number, fetchedTimestamp: number) {
+    open: number, high: number, low: number, change: number, changePercent: number,
+    quoteTimestamp: number, fetchedTimestamp: number) {
     this.symbol = symbol
     this.name = name
     this.price = price
     this.previousClose = previousClose
+    this.open = open
+    this.high = high
+    this.low = low
     this.change = change
     this.changePercent = changePercent
     this.quoteTimestamp = quoteTimestamp

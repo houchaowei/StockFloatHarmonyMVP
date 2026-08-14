@@ -5,7 +5,7 @@
 ## 已实现
 
 - `WindowType.TYPE_FLOAT` 全局悬浮窗口，主应用退到后台后仍可显示
-- 186 × 54vp 收起胶囊和 304 × 246vp 展开卡片
+- 186 × 54vp 收起胶囊和 304 × 264vp 展开卡片
 - 拖动、边界限制、松手自动吸附左右边缘、位置持久化
 - 单击中间行情区展开；展开后可收起、刷新、切换股票和关闭
 - 长按胶囊 900ms 关闭
@@ -15,6 +15,9 @@
 - 6 位股票代码在线验证和添加、最多 20 只、删除及本地保存
 - 收起时每 4 秒轮播；交易中 5 秒刷新，盘前/午休/收盘/周末自动降频
 - 请求失败指数退避并保留上次有效行情
+- 最近一次有效行情会缓存到本地，离线重启时先展示缓存再尝试更新
+- 展开卡片展示今开、最高、最低，行情时间固定按交易所时区显示
+- 自选股支持一键置顶，排序随自选列表持久化
 - 全局权限不可用时仍可在主页面使用完整胶囊预览
 
 ## 运行
@@ -69,6 +72,8 @@ DevEco / SDK 版本的具体界面可能不同。通用流程是：
 6. 点击行情区展开，测试上一只、下一只、刷新、收起和关闭。
 7. 断网后刷新，界面保留最后价格并显示失败状态；恢复网络后可以手动刷新。
 8. 长按胶囊约 900ms，窗口关闭。
+9. 展开胶囊可看到今开、最高、最低，时间与 A 股交易所时区一致。
+10. 将任意非首位自选股置顶并重启应用，顺序应保持；断网重启时先显示本地缓存行情。
 
 ## 自动验证
 
@@ -92,7 +97,7 @@ hvigorw assembleHap
 
 如果终端找不到 `hvigorw`，直接使用 DevEco 的 **Build → Build Hap(s)/APP(s) → Build Hap(s)**。本仓库保留的是可由 IDE 同步的 Hvigor 项目文件，不绑定本地 wrapper 缓存。
 
-当前交付还附带 `StockFloatHarmonyMVP-0.1.0-unsigned.hap`，它用于证明 ArkTS 与 HAP 打包链路已通过，不能直接安装。请由 DevEco 使用你的开发者证书自动签名后部署到手机。
+构建成功后，未签名 HAP 位于 `entry/build/default/outputs/default/entry-default-unsigned.hap`，它不能直接安装。请由 DevEco 使用你的开发者证书自动签名后部署到手机。
 
 ## 代码结构
 
@@ -101,7 +106,7 @@ entry/src/main/ets/
 ├── components/QuoteCapsule.ets       胶囊和展开卡片 UI
 ├── entryability/EntryAbility.ets     应用入口和生命周期
 ├── model/FloatWindowManager.ets      TYPE_FLOAT、拖动、吸边、持久化
-├── model/QuoteStore.ets              自选、刷新、轮播、失败退避
+├── model/QuoteStore.ets              自选、缓存、刷新、轮播、失败退避
 ├── model/StockModels.ets             股票模型和交易阶段
 ├── model/TencentQuoteProvider.ets    行情请求、GB18030 解码、解析
 ├── pages/FloatCapsule.ets             全局悬浮窗口页面

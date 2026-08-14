@@ -10,6 +10,7 @@ struct Index {
   @StorageLink('watchlist') watchlist: Array<StockSymbol> = []
   @StorageLink('selectedIndex') selectedIndex: number = 0
   @StorageLink('quoteStatus') quoteStatus: string = '准备获取行情'
+  @StorageLink('lastUpdated') lastUpdated: number = 0
   @StorageLink('refreshing') refreshing: boolean = false
   @StorageLink('floatVisible') floatVisible: boolean = false
   @StorageLink('floatStatus') floatStatus: string = '尚未开启全局悬浮胶囊'
@@ -36,6 +37,20 @@ struct Index {
       return '#AAB2C1'
     }
     return quote.changePercent > 0 ? '#FF5A63' : '#21C78B'
+  }
+
+  private lastUpdatedText(): string {
+    if (this.lastUpdated <= 0) {
+      return '尚未更新'
+    }
+    const elapsedSeconds: number = Math.max(0, Math.floor((Date.now() - this.lastUpdated) / 1000))
+    if (elapsedSeconds < 60) {
+      return `${elapsedSeconds} 秒前更新`
+    }
+    if (elapsedSeconds < 3600) {
+      return `${Math.floor(elapsedSeconds / 60)} 分钟前更新`
+    }
+    return `${Math.floor(elapsedSeconds / 3600)} 小时前更新`
   }
 
   build() {
@@ -126,7 +141,7 @@ struct Index {
             }
           })
             .width(this.previewExpanded ? 304 : 186)
-            .height(this.previewExpanded ? 246 : 54)
+            .height(this.previewExpanded ? 264 : 54)
         }
         .padding(16)
         .width('100%')
@@ -174,6 +189,14 @@ struct Index {
               }
               .alignItems(HorizontalAlign.End)
 
+              if (index > 0) {
+                Button('置顶')
+                  .fontSize(11)
+                  .fontColor('#9DB8FF')
+                  .backgroundColor('#202C45')
+                  .onClick(() => quoteStore.moveSymbolToTop(symbol))
+              }
+
               Button('删除')
                 .fontSize(11)
                 .fontColor('#FF8990')
@@ -213,7 +236,7 @@ struct Index {
         .backgroundColor('#121720')
         .borderRadius(18)
 
-        Text(`${quoteStore.marketPhase()} · ${this.quoteStatus}`)
+        Text(`${quoteStore.marketPhase()} · ${this.quoteStatus} · ${this.lastUpdatedText()}`)
           .fontSize(11)
           .fontColor('#68758A')
           .padding({ bottom: this.bottomSafeHeight + 24 })

@@ -43,13 +43,19 @@ export class TencentQuoteParser {
 
     const calculatedChange: number = price - previousClose
     const calculatedPercent: number = previousClose === 0 ? 0 : calculatedChange / previousClose * 100
+    const open: number = Number(fields[5])
     const suppliedChange: number = Number(fields[31])
     const suppliedPercent: number = Number(fields[32])
+    const high: number = Number(fields[33])
+    const low: number = Number(fields[34])
     return new StockQuote(
       symbol,
       fields[1],
       price,
       previousClose,
+      Number.isFinite(open) ? open : 0,
+      Number.isFinite(high) ? high : 0,
+      Number.isFinite(low) ? low : 0,
       Number.isFinite(suppliedChange) ? suppliedChange : calculatedChange,
       Number.isFinite(suppliedPercent) ? suppliedPercent : calculatedPercent,
       TencentQuoteParser.parseQuoteTimestamp(fields[30]),
@@ -83,7 +89,7 @@ export class TencentQuoteProvider {
         readTimeout: 10000,
         usingCache: false,
         header: {
-          'User-Agent': 'StockFloatHarmonyMVP/0.1 (personal prototype)',
+          'User-Agent': 'StockFloatHarmonyMVP/0.2 (personal prototype)',
           'Referer': 'https://gu.qq.com/'
         }
       })

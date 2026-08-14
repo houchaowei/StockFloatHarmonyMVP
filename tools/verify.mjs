@@ -48,13 +48,15 @@ function parseLine(line) {
   if (!Number.isFinite(price) || !Number.isFinite(previousClose) || price <= 0) return undefined
   return {
     name: fields[1], code: fields[2], price,
-    change: Number(fields[31]), changePercent: Number(fields[32]), timestamp: fields[30]
+    open: Number(fields[5]), change: Number(fields[31]), changePercent: Number(fields[32]),
+    high: Number(fields[33]), low: Number(fields[34]), timestamp: fields[30]
   }
 }
 
 const fixture = 'v_sh600519="1~贵州茅台~600519~1343.00~1346.50~1346.50~35060~17643~17416~1343.00~66~1342.99~5~1342.98~1~1342.97~1~1342.95~1~1343.03~1~1343.32~23~1344.20~1~1344.30~1~1344.40~5~~20260812161432~-3.50~-0.26~1356.88~1332.51";'
 const quote = parseLine(fixture)
-if (!quote || quote.name !== '贵州茅台' || quote.code !== '600519' || quote.price !== 1343 || quote.changePercent !== -0.26) {
+if (!quote || quote.name !== '贵州茅台' || quote.code !== '600519' || quote.price !== 1343 ||
+  quote.open !== 1346.5 || quote.high !== 1356.88 || quote.low !== 1332.51 || quote.changePercent !== -0.26) {
   throw new Error(`quote parser fixture failed: ${JSON.stringify(quote)}`)
 }
 
@@ -78,6 +80,9 @@ for (const contract of [
 ]) {
   if (!store.includes(contract)) throw new Error(`quote-store contract missing: ${contract}`)
 }
+for (const contract of ['quote_cache', 'encodeQuoteCache', 'decodeQuoteCache', 'moveSymbolToTop', '60000']) {
+  if (!store.includes(contract)) throw new Error(`offline/reorder contract missing: ${contract}`)
+}
 
 const capsule = fs.readFileSync(path.join(root, 'entry/src/main/ets/components/QuoteCapsule.ets'), 'utf8')
 for (const contract of [
@@ -99,6 +104,9 @@ for (const contract of [
 ]) {
   if (!capsule.includes(contract)) throw new Error(`capsule interaction missing: ${contract}`)
 }
+for (const contract of ['今开', '最高', '最低', 'getUTCHours']) {
+  if (!capsule.includes(contract)) throw new Error(`expanded quote detail missing: ${contract}`)
+}
 
 const floatPage = fs.readFileSync(path.join(root, 'entry/src/main/ets/pages/FloatCapsule.ets'), 'utf8')
 for (const contract of ['startDrag', 'endDrag', 'selectionTick', 'renderTick']) {
@@ -113,21 +121,24 @@ for (const contract of ['backgroundTaskManager', 'requestSuspendDelay', 'cancelS
 }
 
 const indexPage = fs.readFileSync(path.join(root, 'entry/src/main/ets/pages/Index.ets'), 'utf8')
-for (const contract of ['应用内实时预览', '开启胶囊', 'addSymbol', 'removeSymbol']) {
+for (const contract of ['应用内实时预览', '开启胶囊', 'addSymbol', 'removeSymbol', '置顶', 'lastUpdatedText']) {
   if (!indexPage.includes(contract)) throw new Error(`fallback/management UI missing: ${contract}`)
 }
 
 if (process.argv.includes('--live')) {
   const response = await fetch('https://qt.gtimg.cn/q=sh600519,sz000001,sz300750', {
-    headers: { Referer: 'https://gu.qq.com/', 'User-Agent': 'StockFloatHarmonyMVP/0.1 verifier' }
+    headers: { Referer: 'https://gu.qq.com/', 'User-Agent': 'StockFloatHarmonyMVP/0.2 verifier' }
   })
   if (!response.ok) throw new Error(`live endpoint returned HTTP ${response.status}`)
   const text = new TextDecoder('gb18030').decode(await response.arrayBuffer())
   const liveQuotes = text.split(';').map(parseLine).filter(Boolean)
-  if (liveQuotes.length !== 3 || liveQuotes.some(item => !item.name || !Number.isFinite(item.price))) {
+  if (liveQuotes.length !== 3 || liveQuotes.some(item => !item.name || !Number.isFinite(item.price) ||
+    !Number.isFinite(item.open) || !Number.isFinite(item.high) || !Number.isFinite(item.low) ||
+    item.open <= 0 || item.high <= 0 || item.low <= 0)) {
     throw new Error(`live quote verification failed: ${JSON.stringify(liveQuotes)}`)
   }
-  console.log(`live quote verification passed: ${liveQuotes.map(item => `${item.name} ${item.price}`).join(', ')}`)
+  console.log(`live quote verification passed: ${liveQuotes.map(item =>
+    `${item.name} ${item.price} (${item.low}-${item.high})`).join(', ')}`)
 }
 
 console.log('StockFloatHarmonyMVP static verification passed')

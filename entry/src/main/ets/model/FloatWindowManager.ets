@@ -7,7 +7,7 @@ import { BusinessError } from '@kit.BasicServicesKit'
 const COLLAPSED_WIDTH_VP: number = 186
 const COLLAPSED_HEIGHT_VP: number = 54
 const EXPANDED_WIDTH_VP: number = 304
-const EXPANDED_HEIGHT_VP: number = 246
+const EXPANDED_HEIGHT_VP: number = 264
 
 export class FloatWindowManager {
   private static singleton: FloatWindowManager = new FloatWindowManager()

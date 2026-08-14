@@ -14,6 +14,7 @@ export class QuoteStore {
   private rotateTimer: number = -1
   private refreshing: boolean = false
   private failures: number = 0
+  private lastCachePersistedAt: number = 0
 
   static getInstance(): QuoteStore {
     return QuoteStore.singleton
@@ -34,6 +35,24 @@ export class QuoteStore {
       watchlist = this.decodeWatchlist(DEFAULT_WATCHLIST)
     }
     AppStorage.set<Array<StockSymbol>>('watchlist', watchlist)
+    let savedQuotes: string = ''
+    try {
+      if (this.dataPreferences !== undefined) {
+        savedQuotes = this.dataPreferences.getSync('quote_cache', '') as string
+      }
+    } catch (error) {
+      const businessError: BusinessError = error as BusinessError
+      console.error(`Failed to read quote cache. Code: ${businessError.code}, message: ${businessError.message}`)
+    }
+    const cachedQuotes: Array<StockQuote> = this.decodeQuoteCache(savedQuotes)
+      .filter((quote: StockQuote) => watchlist.some((symbol: StockSymbol) => symbol.id === quote.symbol.id))
+    if (cachedQuotes.length > 0) {
+      AppStorage.set<Array<StockQuote>>('quotes', cachedQuotes)
+      const newest: number = cachedQuotes.reduce((value: number, quote: StockQuote) =>
+        Math.max(value, quote.fetchedTimestamp), 0)
+      AppStorage.set<number>('lastUpdated', newest)
+      AppStorage.set<string>('quoteStatus', '已显示上次行情，正在更新…')
+    }
   }
 
   start(): void {
@@ -79,6 +98,7 @@ export class QuoteStore {
       AppStorage.set<Array<StockQuote>>('quotes', merged)
       AppStorage.set<number>('lastUpdated', Date.now())
       AppStorage.set<string>('quoteStatus', fresh.length === watchlist.length ? '行情已更新' : '部分行情异常')
+      await this.persistQuoteCache(merged)
       this.failures = 0
     } catch (error) {
       this.failures += 1
@@ -114,11 +134,13 @@ export class QuoteStore {
       }
       const updated: Array<StockSymbol> = watchlist.concat([symbol])
       const currentQuotes: Array<StockQuote> = AppStorage.get<Array<StockQuote>>('quotes') ?? []
+      const updatedQuotes: Array<StockQuote> = currentQuotes.concat(quotes)
       AppStorage.set<Array<StockSymbol>>('watchlist', updated)
-      AppStorage.set<Array<StockQuote>>('quotes', currentQuotes.concat(quotes))
+      AppStorage.set<Array<StockQuote>>('quotes', updatedQuotes)
       AppStorage.set<number>('selectedIndex', updated.length - 1)
       AppStorage.set<string>('quoteStatus', `已添加 ${quotes[0].name}`)
       await this.persistWatchlist(updated)
+      await this.persistQuoteCache(updatedQuotes, true)
       return true
     } catch (error) {
       AppStorage.set<string>('quoteStatus', `验证失败 · ${(error as BusinessError).message}`)
@@ -134,11 +156,34 @@ export class QuoteStore {
     }
     const updated: Array<StockSymbol> = watchlist.filter((item: StockSymbol) => item.id !== symbol.id)
     const quotes: Array<StockQuote> = AppStorage.get<Array<StockQuote>>('quotes') ?? []
-    let index: number = AppStorage.get<number>('selectedIndex') ?? 0
-    index = Math.min(index, updated.length - 1)
+    const oldIndex: number = AppStorage.get<number>('selectedIndex') ?? 0
+    const selectedId: string = watchlist[oldIndex]?.id ?? ''
+    const preservedIndex: number = updated.findIndex((item: StockSymbol) => item.id === selectedId)
+    const nextIndex: number = preservedIndex >= 0 ? preservedIndex : Math.min(oldIndex, updated.length - 1)
     AppStorage.set<Array<StockSymbol>>('watchlist', updated)
-    AppStorage.set<Array<StockQuote>>('quotes', quotes.filter((item: StockQuote) => item.symbol.id !== symbol.id))
-    AppStorage.set<number>('selectedIndex', index)
+    const updatedQuotes: Array<StockQuote> = quotes.filter((item: StockQuote) => item.symbol.id !== symbol.id)
+    AppStorage.set<Array<StockQuote>>('quotes', updatedQuotes)
+    AppStorage.set<number>('selectedIndex', nextIndex)
+    await this.persistWatchlist(updated)
+    await this.persistQuoteCache(updatedQuotes, true)
+  }
+
+  async moveSymbolToTop(symbol: StockSymbol): Promise<void> {
+    const watchlist: Array<StockSymbol> = AppStorage.get<Array<StockSymbol>>('watchlist') ?? []
+    const oldIndex: number = watchlist.findIndex((item: StockSymbol) => item.id === symbol.id)
+    if (oldIndex <= 0) {
+      return
+    }
+    const selectedIndex: number = AppStorage.get<number>('selectedIndex') ?? 0
+    const selectedId: string = watchlist[selectedIndex]?.id ?? symbol.id
+    const updated: Array<StockSymbol> = [symbol].concat(
+      watchlist.filter((item: StockSymbol) => item.id !== symbol.id)
+    )
+    const nextSelectedIndex: number = updated.findIndex((item: StockSymbol) => item.id === selectedId)
+    AppStorage.set<Array<StockSymbol>>('watchlist', updated)
+    AppStorage.set<number>('selectedIndex', Math.max(nextSelectedIndex, 0))
+    AppStorage.set<string>('quoteStatus', `已将 ${symbol.displayCode} 置顶`)
+    this.bumpSelectionTick()
     await this.persistWatchlist(updated)
   }
 
@@ -236,6 +281,51 @@ export class QuoteStore {
     return result
   }
 
+  private encodeQuoteCache(quotes: Array<StockQuote>): string {
+    return quotes.map((quote: StockQuote) => [
+      quote.symbol.id,
+      quote.name.replace(/[|;]/g, ''),
+      quote.price.toString(),
+      quote.previousClose.toString(),
+      quote.open.toString(),
+      quote.high.toString(),
+      quote.low.toString(),
+      quote.change.toString(),
+      quote.changePercent.toString(),
+      quote.quoteTimestamp.toString(),
+      quote.fetchedTimestamp.toString()
+    ].join('|')).join(';')
+  }
+
+  private decodeQuoteCache(value: string): Array<StockQuote> {
+    const result: Array<StockQuote> = []
+    value.split(';').forEach((item: string) => {
+      const fields: Array<string> = item.split('|')
+      if (fields.length !== 11) {
+        return
+      }
+      const symbol: StockSymbol | undefined = StockSymbol.parse(fields[0])
+      const price: number = Number(fields[2])
+      const previousClose: number = Number(fields[3])
+      const open: number = Number(fields[4])
+      const high: number = Number(fields[5])
+      const low: number = Number(fields[6])
+      const change: number = Number(fields[7])
+      const changePercent: number = Number(fields[8])
+      const quoteTimestamp: number = Number(fields[9])
+      const fetchedTimestamp: number = Number(fields[10])
+      if (symbol === undefined || !Number.isFinite(price) || price <= 0 ||
+        !Number.isFinite(previousClose) || !Number.isFinite(open) || !Number.isFinite(high) ||
+        !Number.isFinite(low) || !Number.isFinite(change) || !Number.isFinite(changePercent) ||
+        !Number.isFinite(quoteTimestamp) || !Number.isFinite(fetchedTimestamp)) {
+        return
+      }
+      result.push(new StockQuote(symbol, fields[1], price, previousClose, open, high, low,
+        change, changePercent, quoteTimestamp, fetchedTimestamp))
+    })
+    return result
+  }
+
   private async persistWatchlist(watchlist: Array<StockSymbol>): Promise<void> {
     if (this.dataPreferences === undefined) {
       return
@@ -246,6 +336,24 @@ export class QuoteStore {
     } catch (error) {
       const businessError: BusinessError = error as BusinessError
       AppStorage.set<string>('quoteStatus', `自选已更新，但保存失败 · ${businessError.message}`)
+    }
+  }
+
+  private async persistQuoteCache(quotes: Array<StockQuote>, force: boolean = false): Promise<void> {
+    if (this.dataPreferences === undefined) {
+      return
+    }
+    const now: number = Date.now()
+    if (!force && now - this.lastCachePersistedAt < 60000) {
+      return
+    }
+    try {
+      this.dataPreferences.putSync('quote_cache', this.encodeQuoteCache(quotes))
+      await this.dataPreferences.flush()
+      this.lastCachePersistedAt = now
+    } catch (error) {
+      const businessError: BusinessError = error as BusinessError
+      console.error(`Failed to persist quote cache. Code: ${businessError.code}, message: ${businessError.message}`)
     }
   }
 }
