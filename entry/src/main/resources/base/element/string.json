@@ -1,0 +1,6 @@
+{
+  "string": [
+    { "name": "module_desc", "value": "A 股全局悬浮行情胶囊" },
+    { "name": "ability_desc", "value": "显示并管理全局股票悬浮胶囊" }
+  ]
+}

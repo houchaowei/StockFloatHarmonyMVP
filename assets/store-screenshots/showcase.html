@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>StockFloat 应用介绍截图</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: #05070b; color: #f7f9fc; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    body { width: 1920px; }
+    .slide {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      isolation: isolate;
+      background:
+        radial-gradient(circle at 78% 16%, rgba(255, 90, 99, .18), transparent 31%),
+        radial-gradient(circle at 18% 78%, rgba(52, 109, 255, .20), transparent 34%),
+        linear-gradient(135deg, #111722 0%, #080b11 58%, #07090d 100%);
+    }
+    .slide::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      opacity: .22;
+      background-image: linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: linear-gradient(90deg, #000, transparent 78%);
+    }
+    .brand {
+      position: absolute;
+      top: 72px;
+      left: 112px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: .3px;
+    }
+    .brand img { width: 58px; height: 58px; border-radius: 15px; box-shadow: 0 12px 32px rgba(0,0,0,.35); }
+    .brand small { display: block; margin-top: 3px; color: #7f8ba0; font-size: 15px; font-weight: 500; letter-spacing: 1.6px; }
+    .copy { position: absolute; left: 112px; top: 255px; width: 800px; }
+    .eyebrow { color: #ff6a73; font-size: 23px; font-weight: 700; letter-spacing: 4px; }
+    h1 { margin: 27px 0 28px; font-size: 92px; line-height: 1.08; letter-spacing: -4px; }
+    .lead { margin: 0; width: 720px; color: #a9b3c3; font-size: 30px; line-height: 1.65; }
+    .chips { display: flex; gap: 15px; margin-top: 52px; }
+    .chip { padding: 15px 23px; border: 1px solid #2e394b; border-radius: 999px; background: rgba(20, 27, 38, .72); color: #d5dce7; font-size: 20px; }
+    .fineprint { position: absolute; left: 112px; bottom: 62px; color: #586476; font-size: 16px; }
+    .halo { position: absolute; right: 74px; top: 90px; width: 740px; height: 900px; border-radius: 50%; background: radial-gradient(circle, rgba(67,83,115,.35), transparent 64%); filter: blur(3px); }
+    .phone {
+      position: absolute;
+      right: 175px;
+      top: 78px;
+      width: 510px;
+      height: 924px;
+      padding: 15px;
+      border-radius: 68px;
+      background: linear-gradient(145deg, #434b58, #11151c 42%, #050608 78%, #303844);
+      box-shadow: 0 45px 100px rgba(0,0,0,.52), 0 0 0 1px rgba(255,255,255,.16) inset;
+      transform: rotate(1.2deg);
+    }
+    .phone.flat { transform: rotate(-1deg); }
+    .screen {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      border-radius: 55px;
+      background: #0c1017;
+      box-shadow: 0 0 0 1px rgba(255,255,255,.08) inset;
+    }
+    .island { position: absolute; z-index: 20; top: 13px; left: 50%; width: 132px; height: 33px; transform: translateX(-50%); border-radius: 22px; background: #030405; }
+    .statusbar { position: relative; z-index: 5; height: 52px; padding: 17px 25px 0; display: flex; justify-content: space-between; color: #e7ebf2; font-size: 14px; font-weight: 600; }
+    .app { padding: 21px 23px 32px; }
+    .app-head { display: flex; align-items: center; margin-bottom: 18px; }
+    .app-title { font-size: 27px; font-weight: 800; }
+    .app-subtitle { margin-top: 3px; color: #8893a6; font-size: 12px; }
+    .spacer { flex: 1; }
+    .button { display: inline-flex; align-items: center; justify-content: center; min-width: 76px; height: 38px; padding: 0 16px; border-radius: 19px; background: #346dff; color: #fff; font-size: 13px; font-weight: 650; }
+    .button.secondary { background: #2b3340; color: #dce2ec; }
+    .button.danger { background: #34232a; color: #ff7a82; }
+    .panel { margin-top: 13px; padding: 18px; border-radius: 19px; background: #121720; box-shadow: 0 0 0 1px rgba(255,255,255,.025) inset; }
+    .panel.top { background: #171d27; }
+    .panel-title { display: flex; align-items: center; font-size: 16px; font-weight: 700; }
+    .note { margin-top: 10px; color: #8fa1bd; font-size: 11px; line-height: 1.45; }
+    .preview-label { display: flex; color: #dce2ec; font-size: 14px; font-weight: 650; }
+    .preview-label small { color: #8290a6; font-size: 10px; font-weight: 500; }
+    .capsule {
+      display: flex;
+      align-items: center;
+      width: 230px;
+      height: 67px;
+      margin: 18px auto 0;
+      padding: 0 7px;
+      border: 1px solid rgba(82,96,113,.52);
+      border-radius: 36px;
+      background: rgba(12,16,23,.95);
+      box-shadow: 0 13px 30px rgba(0,0,0,.45);
+    }
+    .cap-arrow { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: rgba(38,48,61,.88); color: #bfc9d8; font-size: 20px; }
+    .cap-main { flex: 1; text-align: center; }
+    .cap-name { color: #f5f7fb; font-size: 13px; font-weight: 750; }
+    .cap-name::before { content: ""; display: inline-block; width: 6px; height: 6px; margin-right: 7px; border-radius: 50%; background: #ff5a63; vertical-align: 2px; }
+    .cap-index { margin-left: 6px; color: #8e98aa; font-size: 9px; font-weight: 500; }
+    .cap-price { margin-top: 2px; color: #fff; font-size: 18px; font-weight: 800; }
+    .up { margin-left: 8px; color: #ff5a63; font-size: 12px; font-weight: 650; }
+    .watch-head { display: flex; margin-bottom: 4px; color: #eef2f8; font-size: 16px; font-weight: 700; }
+    .count { color: #758196; font-size: 11px; font-weight: 500; }
+    .stock-row { display: flex; align-items: center; margin-top: 9px; padding: 10px 12px; border-radius: 12px; background: #171d27; }
+    .stock-row.selected { background: #222b39; }
+    .stock-name { color: #e7ebf2; font-size: 13px; font-weight: 650; }
+    .stock-code { margin-top: 2px; color: #68758a; font-size: 9px; }
+    .stock-value { text-align: right; color: #f2f5fa; font-size: 13px; font-weight: 650; }
+    .stock-change { margin-top: 2px; color: #ff5a63; font-size: 10px; }
+    .delete { margin-left: 13px; padding: 7px 11px; border-radius: 12px; background: #322128; color: #ff8990; font-size: 10px; }
+
+    /* Home-screen feature slides */
+    .wallpaper {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 68% 28%, rgba(243,112,134,.82), transparent 22%),
+        radial-gradient(circle at 30% 68%, rgba(80,107,215,.86), transparent 34%),
+        linear-gradient(145deg, #131a38, #1e1834 48%, #07101e);
+    }
+    .wallpaper::after { content: ""; position: absolute; inset: 0; background: linear-gradient(rgba(5,8,15,.08), rgba(5,8,15,.42)); }
+    .home-date { position: relative; z-index: 2; margin-top: 58px; text-align: center; text-shadow: 0 2px 10px rgba(0,0,0,.35); }
+    .home-time { font-size: 70px; font-weight: 250; letter-spacing: -3px; }
+    .home-day { margin-top: 4px; font-size: 17px; color: rgba(255,255,255,.84); }
+    .icon-grid { position: relative; z-index: 2; display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px 20px; padding: 64px 34px 0; }
+    .home-icon { text-align: center; color: rgba(255,255,255,.92); font-size: 10px; }
+    .home-icon i { display: block; width: 58px; height: 58px; margin: 0 auto 8px; border-radius: 17px; background: linear-gradient(145deg, rgba(255,255,255,.72), rgba(255,255,255,.18)); box-shadow: 0 9px 20px rgba(0,0,0,.18), 0 0 0 1px rgba(255,255,255,.18) inset; }
+    .home-icon:nth-child(2n) i { background: linear-gradient(145deg, #ff847d, #aa375d); }
+    .home-icon:nth-child(3n) i { background: linear-gradient(145deg, #5c9eff, #3552c6); }
+    .home-icon:nth-child(4n) i { background: linear-gradient(145deg, #62d7a4, #168b77); }
+    .dock { position: absolute; z-index: 2; left: 28px; right: 28px; bottom: 28px; height: 86px; display: flex; justify-content: space-around; align-items: center; border: 1px solid rgba(255,255,255,.15); border-radius: 30px; background: rgba(255,255,255,.13); backdrop-filter: blur(24px); }
+    .dock i { width: 58px; height: 58px; border-radius: 17px; background: linear-gradient(145deg, #75ccff, #2674df); }
+    .dock i:nth-child(2) { background: linear-gradient(145deg, #79e39d, #1a9e6b); }
+    .dock i:nth-child(3) { background: linear-gradient(145deg, #f7d166, #e88738); }
+    .global-cap { position: absolute; z-index: 8; top: 420px; right: -20px; width: 250px; transform: scale(1.12); transform-origin: right center; }
+    .zoom-cap { width: 650px; height: 174px; margin-top: 54px; border-radius: 90px; padding: 0 22px; }
+    .zoom-cap .cap-arrow { width: 70px; height: 70px; font-size: 38px; }
+    .zoom-cap .cap-name { font-size: 27px; }
+    .zoom-cap .cap-name::before { width: 12px; height: 12px; margin-right: 14px; }
+    .zoom-cap .cap-index { font-size: 16px; }
+    .zoom-cap .cap-price { margin-top: 7px; font-size: 40px; }
+    .zoom-cap .up { font-size: 23px; }
+    .expanded {
+      position: absolute;
+      z-index: 9;
+      top: 305px;
+      right: 24px;
+      width: 385px;
+      height: 312px;
+      padding: 24px;
+      border: 1px solid rgba(103,120,142,.55);
+      border-radius: 28px;
+      background: rgba(12,16,23,.96);
+      box-shadow: 0 24px 58px rgba(0,0,0,.58);
+    }
+    .expanded-title { display: flex; align-items: flex-start; }
+    .expanded-title strong { display: block; font-size: 22px; }
+    .expanded-title small { display: block; margin-top: 3px; color: #8e98aa; font-size: 12px; }
+    .expanded-num { display: flex; align-items: center; margin-top: 24px; }
+    .expanded-price { color: #fff; font-size: 43px; font-weight: 800; }
+    .expanded-change { margin-left: 18px; color: #ff5a63; font-size: 16px; line-height: 1.45; font-weight: 650; }
+    .expanded-status { display: flex; margin-top: 17px; color: #aab2c1; font-size: 12px; }
+    .expanded-status span:last-child { margin-left: auto; color: #697386; }
+    .actions { display: flex; gap: 10px; margin-top: 22px; }
+    .actions .button { flex: 1; min-width: 0; height: 39px; padding: 0 9px; font-size: 12px; }
+    .bottom-actions { display: flex; align-items: center; margin-top: 16px; color: #697386; font-size: 11px; }
+    .bottom-actions .button { min-width: 65px; height: 35px; margin-left: 8px; padding: 0 11px; font-size: 11px; }
+    .annotation { display: flex; gap: 18px; margin-top: 48px; }
+    .annotation div { width: 220px; padding: 18px 20px; border-left: 3px solid #ff5a63; border-radius: 0 13px 13px 0; background: rgba(20,27,38,.66); }
+    .annotation strong { display: block; color: #f2f5fa; font-size: 20px; }
+    .annotation span { display: block; margin-top: 5px; color: #778398; font-size: 15px; }
+  </style>
+</head>
+<body>
+  <section class="slide" id="screen-1">
+    <div class="brand">
+      <img src="../../AppScope/resources/base/media/app_icon.svg" alt="StockFloat">
+      <div>StockFloat<small>HARMONYOS NEXT</small></div>
+    </div>
+    <div class="copy">
+      <div class="eyebrow">自选行情 · 实时掌握</div>
+      <h1>关注的股票<br>一屏尽览</h1>
+      <p class="lead">管理自选股，查看价格与涨跌幅，让重要行情始终清晰可见。</p>
+      <div class="chips"><span class="chip">实时行情</span><span class="chip">自选管理</span><span class="chip">智能刷新</span></div>
+    </div>
+    <div class="fineprint">界面数据仅作展示，不构成投资建议</div>
+    <div class="halo"></div>
+    <div class="phone">
+      <div class="screen">
+        <div class="island"></div>
+        <div class="statusbar"><span>10:26</span><span>5G&nbsp;&nbsp;▰▰▰&nbsp;&nbsp;87%</span></div>
+        <div class="app">
+          <div class="app-head">
+            <div><div class="app-title">StockFloat</div><div class="app-subtitle">鸿蒙全局股票悬浮胶囊 · MVP</div></div>
+            <div class="spacer"></div><span class="button secondary">刷新</span>
+          </div>
+          <div class="panel top">
+            <div class="panel-title"><span>全局悬浮</span><span class="spacer"></span><span class="button">开启胶囊</span></div>
+            <div class="note">悬浮胶囊已准备就绪，可在其他应用上层显示。</div>
+          </div>
+          <div class="panel">
+            <div class="preview-label"><span>应用内实时预览</span><span class="spacer"></span><small>交易中</small></div>
+            <div class="capsule">
+              <span class="cap-arrow">‹</span><div class="cap-main"><div class="cap-name">贵州茅台<span class="cap-index">1/3</span></div><div class="cap-price">1421.30 <span class="up">+0.86%</span></div></div><span class="cap-arrow">›</span>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="watch-head"><span>自选股</span><span class="spacer"></span><span class="count">3/20</span></div>
+            <div class="stock-row selected"><div><div class="stock-name">贵州茅台</div><div class="stock-code">600519</div></div><div class="spacer"></div><div class="stock-value">1421.30<div class="stock-change">+0.86%</div></div><span class="delete">删除</span></div>
+            <div class="stock-row"><div><div class="stock-name">平安银行</div><div class="stock-code">000001</div></div><div class="spacer"></div><div class="stock-value">11.42<div class="stock-change">+0.44%</div></div><span class="delete">删除</span></div>
+            <div class="stock-row"><div><div class="stock-name">宁德时代</div><div class="stock-code">300750</div></div><div class="spacer"></div><div class="stock-value">268.80<div class="stock-change">+1.21%</div></div><span class="delete">删除</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="screen-2">
+    <div class="brand">
+      <img src="../../AppScope/resources/base/media/app_icon.svg" alt="StockFloat">
+      <div>StockFloat<small>HARMONYOS NEXT</small></div>
+    </div>
+    <div class="copy">
+      <div class="eyebrow">全局悬浮 · 随时可见</div>
+      <h1>一枚胶囊<br>穿梭全局</h1>
+      <p class="lead">切换到桌面或其他应用，仍能快速查看自选股行情。</p>
+      <div class="capsule zoom-cap">
+        <span class="cap-arrow">‹</span><div class="cap-main"><div class="cap-name">贵州茅台<span class="cap-index">1/3</span></div><div class="cap-price">1421.30 <span class="up">+0.86%</span></div></div><span class="cap-arrow">›</span>
+      </div>
+    </div>
+    <div class="fineprint">支持拖动、自动吸边与位置记忆</div>
+    <div class="halo"></div>
+    <div class="phone flat">
+      <div class="screen">
+        <div class="wallpaper"></div><div class="island"></div>
+        <div class="statusbar"><span>10:26</span><span>5G&nbsp;&nbsp;▰▰▰&nbsp;&nbsp;87%</span></div>
+        <div class="home-date"><div class="home-time">10:26</div><div class="home-day">8月14日 星期五</div></div>
+        <div class="icon-grid">
+          <div class="home-icon"><i></i>图库</div><div class="home-icon"><i></i>天气</div><div class="home-icon"><i></i>文件</div><div class="home-icon"><i></i>音乐</div>
+          <div class="home-icon"><i></i>备忘录</div><div class="home-icon"><i></i>运动</div><div class="home-icon"><i></i>视频</div><div class="home-icon"><i></i>设置</div>
+        </div>
+        <div class="capsule global-cap"><span class="cap-arrow">‹</span><div class="cap-main"><div class="cap-name">贵州茅台<span class="cap-index">1/3</span></div><div class="cap-price">1421.30 <span class="up">+0.86%</span></div></div><span class="cap-arrow">›</span></div>
+        <div class="dock"><i></i><i></i><i></i></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="screen-3">
+    <div class="brand">
+      <img src="../../AppScope/resources/base/media/app_icon.svg" alt="StockFloat">
+      <div>StockFloat<small>HARMONYOS NEXT</small></div>
+    </div>
+    <div class="copy">
+      <div class="eyebrow">展开卡片 · 便捷操作</div>
+      <h1>轻点展开<br>行情更完整</h1>
+      <p class="lead">查看价格、涨跌额和行情时间，快速切换股票或手动刷新。</p>
+      <div class="annotation">
+        <div><strong>快速切换</strong><span>上一只 / 下一只</span></div>
+        <div><strong>灵活控制</strong><span>刷新 / 收起 / 关闭</span></div>
+      </div>
+    </div>
+    <div class="fineprint">收起时自动轮播，交易时段智能刷新</div>
+    <div class="halo"></div>
+    <div class="phone">
+      <div class="screen">
+        <div class="wallpaper"></div><div class="island"></div>
+        <div class="statusbar"><span>10:26</span><span>5G&nbsp;&nbsp;▰▰▰&nbsp;&nbsp;87%</span></div>
+        <div class="home-date"><div class="home-time">10:26</div><div class="home-day">8月14日 星期五</div></div>
+        <div class="icon-grid">
+          <div class="home-icon"><i></i>图库</div><div class="home-icon"><i></i>天气</div><div class="home-icon"><i></i>文件</div><div class="home-icon"><i></i>音乐</div>
+          <div class="home-icon"><i></i>备忘录</div><div class="home-icon"><i></i>运动</div><div class="home-icon"><i></i>视频</div><div class="home-icon"><i></i>设置</div>
+        </div>
+        <div class="expanded">
+          <div class="expanded-title"><div><strong>贵州茅台</strong><small>600519</small></div><span class="spacer"></span><small>1 / 3</small></div>
+          <div class="expanded-num"><span class="expanded-price">1421.30</span><span class="expanded-change">+12.10<br>+0.86%</span></div>
+          <div class="expanded-status"><span>行情已更新</span><span>行情 10:26:31</span></div>
+          <div class="actions"><span class="button secondary">上一只</span><span class="button">刷新</span><span class="button secondary">下一只</span></div>
+          <div class="bottom-actions"><span>拖动吸边 · 点击收起</span><span class="spacer"></span><span class="button secondary">收起</span><span class="button danger">关闭</span></div>
+        </div>
+        <div class="dock"><i></i><i></i><i></i></div>
+      </div>
+    </div>
+  </section>
+</body>
+</html>
