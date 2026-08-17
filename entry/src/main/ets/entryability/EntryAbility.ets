@@ -3,12 +3,22 @@ import { display, window } from '@kit.ArkUI'
 import { BusinessError } from '@kit.BasicServicesKit'
 import { floatWindowManager } from '../model/FloatWindowManager'
 import { quoteStore } from '../model/QuoteStore'
+import { personalStore } from '../model/PersonalStore'
 
 export default class EntryAbility extends UIAbility {
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
+    AppStorage.setOrCreate<string>('managementRoute', 'root')
+    AppStorage.set<string>('managementRoute', 'root')
+    AppStorage.setOrCreate<number>('managementTab', 0)
   }
 
   async onWindowStageCreate(windowStage: window.WindowStage): Promise<void> {
+    try {
+      await personalStore.initialize(this.context)
+    } catch (error) {
+      const businessError: BusinessError = error as BusinessError
+      AppStorage.set<string>('alertStatus', `初始化个性化设置失败 · ${businessError.message}`)
+    }
     try {
       await quoteStore.initialize(this.context)
     } catch (error) {
@@ -30,6 +40,9 @@ export default class EntryAbility extends UIAbility {
     }
     await this.applyEdgeToEdgeLayout(windowStage)
     quoteStore.start()
+    if (personalStore.shouldRestoreFloat()) {
+      await floatWindowManager.show(false)
+    }
   }
 
   private async applyEdgeToEdgeLayout(windowStage: window.WindowStage): Promise<void> {
@@ -69,7 +82,7 @@ export default class EntryAbility extends UIAbility {
 
   onDestroy(): void {
     quoteStore.stop()
-    floatWindowManager.hide()
+    floatWindowManager.shutdown()
   }
 
   onForeground(): void {
@@ -79,5 +92,14 @@ export default class EntryAbility extends UIAbility {
 
   onBackground(): void {
     floatWindowManager.onAbilityBackground()
+  }
+
+  onBackPressed(): boolean {
+    const route: string = AppStorage.get<string>('managementRoute') ?? 'root'
+    if (route !== 'root') {
+      AppStorage.set<string>('managementRoute', 'root')
+      return true
+    }
+    return false
   }
 }

@@ -3,11 +3,8 @@ import { preferences } from '@kit.ArkData'
 import { display, window } from '@kit.ArkUI'
 import { backgroundTaskManager } from '@kit.BackgroundTasksKit'
 import { BusinessError } from '@kit.BasicServicesKit'
-
-const COLLAPSED_WIDTH_VP: number = 186
-const COLLAPSED_HEIGHT_VP: number = 54
-const EXPANDED_WIDTH_VP: number = 304
-const EXPANDED_HEIGHT_VP: number = 264
+import { CapsuleDimensions, CapsuleSize } from './PersonalModels'
+import { personalStore } from './PersonalStore'
 
 export class FloatWindowManager {
   private static singleton: FloatWindowManager = new FloatWindowManager()
@@ -28,6 +25,11 @@ export class FloatWindowManager {
   private screenHeight: number = 1920
   private dataPreferences?: preferences.Preferences
   private suspendDelayInfo?: backgroundTaskManager.DelaySuspendInfo
+  private abilityInForeground: boolean = true
+  private displayListenerRegistered: boolean = false
+  private displayChangeListener: (displayId: number) => void = (_displayId: number) => {
+    this.handleDisplayChange()
+  }
 
   static getInstance(): FloatWindowManager {
     return FloatWindowManager.singleton
@@ -41,22 +43,26 @@ export class FloatWindowManager {
       const businessError: BusinessError = error as BusinessError
       AppStorage.set<string>('floatStatus', `悬浮位置将不保存 · ${businessError.message}`)
     }
-    try {
-      const currentDisplay: display.Display = display.getDefaultDisplaySync()
-      this.density = currentDisplay.densityPixels
-      this.screenWidth = currentDisplay.width
-      this.screenHeight = currentDisplay.height
-    } catch (error) {
-      const businessError: BusinessError = error as BusinessError
-      AppStorage.set<string>('floatStatus', `读取屏幕尺寸失败 · ${businessError.message}`)
+    this.refreshDisplayMetrics()
+    if (!this.displayListenerRegistered) {
+      try {
+        display.on('change', this.displayChangeListener)
+        this.displayListenerRegistered = true
+      } catch (error) {
+        const businessError: BusinessError = error as BusinessError
+        console.info(`Display change listener unavailable. Code: ${businessError.code}, message: ${businessError.message}`)
+      }
     }
   }
 
-  async show(): Promise<void> {
+  async show(userInitiated: boolean = true): Promise<void> {
     if (this.floatWindow !== undefined) {
       try {
         await this.floatWindow.showWindow()
         AppStorage.set<boolean>('floatVisible', true)
+        if (userInitiated) {
+          await personalStore.setFloatUserEnabled(true)
+        }
       } catch (error) {
         const businessError: BusinessError = error as BusinessError
         AppStorage.set<string>('floatStatus', `显示悬浮窗失败 ${businessError.code}: ${businessError.message}`)
@@ -73,8 +79,8 @@ export class FloatWindowManager {
         windowType: window.WindowType.TYPE_FLOAT,
         ctx: this.context
       })
-      const width: number = this.vpToPx(COLLAPSED_WIDTH_VP)
-      const height: number = this.vpToPx(COLLAPSED_HEIGHT_VP)
+      const width: number = this.currentWidthPx(false)
+      const height: number = this.currentHeightPx(false)
       await this.floatWindow.resize(width, height)
       const storedX: number = Number(this.dataPreferences?.getSync('float_x', this.screenWidth - width - this.vpToPx(12)))
       const storedOnRight: boolean = this.dataPreferences?.getSync(
@@ -89,7 +95,13 @@ export class FloatWindowManager {
       AppStorage.set<boolean>('floatExpanded', false)
       AppStorage.set<boolean>('floatVisible', true)
       AppStorage.set<string>('floatStatus', '全局悬浮胶囊运行中')
-      this.requestSuspendDelay()
+      AppStorage.set<boolean>('backgroundActive', true)
+      if (userInitiated) {
+        await personalStore.setFloatUserEnabled(true)
+      }
+      if (!this.abilityInForeground) {
+        this.requestSuspendDelay()
+      }
     } catch (error) {
       const businessError: BusinessError = error as BusinessError
       this.floatWindow = undefined
@@ -102,8 +114,11 @@ export class FloatWindowManager {
     }
   }
 
-  async hide(): Promise<void> {
+  async hide(rememberDisabled: boolean = true): Promise<void> {
     if (this.floatWindow === undefined) {
+      if (rememberDisabled) {
+        await personalStore.setFloatUserEnabled(false)
+      }
       return
     }
     try {
@@ -123,6 +138,22 @@ export class FloatWindowManager {
       this.cancelSuspendDelay()
       AppStorage.set<boolean>('floatVisible', false)
       AppStorage.set<boolean>('floatExpanded', false)
+      if (rememberDisabled) {
+        await personalStore.setFloatUserEnabled(false)
+      }
+    }
+  }
+
+  async shutdown(): Promise<void> {
+    await this.hide(false)
+    if (this.displayListenerRegistered) {
+      try {
+        display.off('change', this.displayChangeListener)
+      } catch (error) {
+        const businessError: BusinessError = error as BusinessError
+        console.info(`Failed to remove display listener. Code: ${businessError.code}`)
+      }
+      this.displayListenerRegistered = false
     }
   }
 
@@ -173,8 +204,8 @@ export class FloatWindowManager {
       return
     }
     const expanded: boolean = AppStorage.get<boolean>('floatExpanded') ?? false
-    const width: number = this.vpToPx(expanded ? EXPANDED_WIDTH_VP : COLLAPSED_WIDTH_VP)
-    const height: number = this.vpToPx(expanded ? EXPANDED_HEIGHT_VP : COLLAPSED_HEIGHT_VP)
+    const width: number = this.currentWidthPx(expanded)
+    const height: number = this.currentHeightPx(expanded)
     this.x = Math.round(this.dragStartX + this.vpToPx(offsetXVp))
     this.y = Math.round(this.dragStartY + this.vpToPx(offsetYVp))
     this.clampPosition(width, height)
@@ -194,8 +225,8 @@ export class FloatWindowManager {
     }
     this.dragActive = false
     const expanded: boolean = AppStorage.get<boolean>('floatExpanded') ?? false
-    const width: number = this.vpToPx(expanded ? EXPANDED_WIDTH_VP : COLLAPSED_WIDTH_VP)
-    const height: number = this.vpToPx(expanded ? EXPANDED_HEIGHT_VP : COLLAPSED_HEIGHT_VP)
+    const width: number = this.currentWidthPx(expanded)
+    const height: number = this.currentHeightPx(expanded)
     const margin: number = this.vpToPx(8)
     this.pendingMoveX = -1
     this.pendingMoveY = -1
@@ -226,8 +257,8 @@ export class FloatWindowManager {
     }
     try {
       const nextExpanded: boolean = !(AppStorage.get<boolean>('floatExpanded') ?? false)
-      const width: number = this.vpToPx(nextExpanded ? EXPANDED_WIDTH_VP : COLLAPSED_WIDTH_VP)
-      const height: number = this.vpToPx(nextExpanded ? EXPANDED_HEIGHT_VP : COLLAPSED_HEIGHT_VP)
+      const width: number = this.currentWidthPx(nextExpanded)
+      const height: number = this.currentHeightPx(nextExpanded)
       const oldRect: window.Rect = this.floatWindow.getWindowProperties().windowRect
       const wasRight: boolean = oldRect.left + oldRect.width / 2 >= this.screenWidth / 2
       await this.floatWindow.resize(width, height)
@@ -244,19 +275,74 @@ export class FloatWindowManager {
   }
 
   onAbilityBackground(): void {
+    this.abilityInForeground = false
     if (this.floatWindow !== undefined) {
+      AppStorage.set<boolean>('backgroundActive', true)
       this.requestSuspendDelay()
     }
   }
 
   onAbilityForeground(): void {
-    if (this.floatWindow !== undefined) {
-      this.requestSuspendDelay()
+    this.abilityInForeground = true
+    this.cancelSuspendDelay()
+    AppStorage.set<boolean>('backgroundActive', true)
+  }
+
+  async applyPresentationSettings(): Promise<void> {
+    if (this.floatWindow === undefined) {
+      return
+    }
+    const expanded: boolean = AppStorage.get<boolean>('floatExpanded') ?? false
+    const width: number = this.currentWidthPx(expanded)
+    const height: number = this.currentHeightPx(expanded)
+    try {
+      const oldRect: window.Rect = this.floatWindow.getWindowProperties().windowRect
+      const onRight: boolean = oldRect.left + oldRect.width / 2 >= this.screenWidth / 2
+      await this.floatWindow.resize(width, height)
+      this.x = onRight ? this.screenWidth - width - this.vpToPx(8) : this.vpToPx(8)
+      this.y = oldRect.top
+      this.clampPosition(width, height)
+      await this.floatWindow.moveWindowTo(this.x, this.y)
+      await this.savePosition()
+    } catch (error) {
+      const businessError: BusinessError = error as BusinessError
+      AppStorage.set<string>('floatStatus', `应用胶囊设置失败 · ${businessError.message}`)
     }
   }
 
   private vpToPx(value: number): number {
     return Math.round(value * this.density)
+  }
+
+  private currentWidthPx(expanded: boolean): number {
+    const size: CapsuleSize = personalStore.capsuleSize()
+    const desired: number = this.vpToPx(expanded ? CapsuleDimensions.expandedWidth(size) :
+      CapsuleDimensions.collapsedWidth(size))
+    return Math.min(desired, Math.max(this.vpToPx(160), this.screenWidth - this.vpToPx(16)))
+  }
+
+  private currentHeightPx(expanded: boolean): number {
+    const size: CapsuleSize = personalStore.capsuleSize()
+    const desired: number = this.vpToPx(expanded ? CapsuleDimensions.expandedHeight(size) :
+      CapsuleDimensions.collapsedHeight(size))
+    return expanded ? Math.min(desired, Math.max(this.vpToPx(240), this.screenHeight - this.vpToPx(56))) : desired
+  }
+
+  private refreshDisplayMetrics(): void {
+    try {
+      const currentDisplay: display.Display = display.getDefaultDisplaySync()
+      this.density = currentDisplay.densityPixels
+      this.screenWidth = currentDisplay.width
+      this.screenHeight = currentDisplay.height
+    } catch (error) {
+      const businessError: BusinessError = error as BusinessError
+      AppStorage.set<string>('floatStatus', `读取屏幕尺寸失败 · ${businessError.message}`)
+    }
+  }
+
+  private async handleDisplayChange(): Promise<void> {
+    this.refreshDisplayMetrics()
+    await this.applyPresentationSettings()
   }
 
   private clampPosition(width: number, height: number): void {
@@ -316,7 +402,8 @@ export class FloatWindowManager {
         'stock float rotation',
         () => {
           this.suspendDelayInfo = undefined
-          if (this.floatWindow !== undefined) {
+          if (this.floatWindow !== undefined && !this.abilityInForeground) {
+            AppStorage.set<boolean>('backgroundActive', false)
             AppStorage.set<string>('floatStatus', '悬浮胶囊运行中 · 后台轮播延迟已到期')
           }
         }

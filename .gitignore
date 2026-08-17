@@ -9,4 +9,5 @@ pnpm-lock.yaml
 package.json
 Users/
 local.properties
+.signing/local-signing.json
 *.hap

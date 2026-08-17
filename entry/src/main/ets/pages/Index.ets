@@ -1,248 +1,117 @@
-import { QuoteCapsule } from '../components/QuoteCapsule'
-import { floatWindowManager } from '../model/FloatWindowManager'
-import { quoteStore } from '../model/QuoteStore'
-import { StockQuote, StockSymbol } from '../model/StockModels'
+import { AlertEditorPage } from './AlertEditorPage'
+import { AlertsPage } from './AlertsPage'
+import { PositionEditorPage } from './PositionEditorPage'
+import { PositionsPage } from './PositionsPage'
+import { SettingsPage } from './SettingsPage'
+import { WatchlistPage } from './WatchlistPage'
+
+enum ManagementRoute {
+  ROOT = 'root',
+  ALERT_EDITOR = 'alertEditor',
+  POSITION_EDITOR = 'positionEditor'
+}
 
 @Entry
 @Component
 struct Index {
-  @StorageLink('quotes') quotes: Array<StockQuote> = []
-  @StorageLink('watchlist') watchlist: Array<StockSymbol> = []
-  @StorageLink('selectedIndex') selectedIndex: number = 0
-  @StorageLink('quoteStatus') quoteStatus: string = '准备获取行情'
-  @StorageLink('lastUpdated') lastUpdated: number = 0
-  @StorageLink('refreshing') refreshing: boolean = false
-  @StorageLink('floatVisible') floatVisible: boolean = false
-  @StorageLink('floatStatus') floatStatus: string = '尚未开启全局悬浮胶囊'
-  @StorageProp('topSafeHeight') topSafeHeight: number = 0
+  @StorageLink('managementRoute') managementRoute: string = ManagementRoute.ROOT
+  @StorageLink('managementTab') managementTab: number = 0
   @StorageProp('bottomSafeHeight') bottomSafeHeight: number = 0
-  @State inputCode: string = ''
-  @State previewExpanded: boolean = false
-  @State adding: boolean = false
+  @State editorSymbolId: string = ''
+  @State editorAlertId: string = ''
 
-  private selectedQuote(): StockQuote | undefined {
-    const symbol: StockSymbol | undefined = this.watchlist[this.selectedIndex]
-    if (symbol === undefined) {
-      return undefined
-    }
-    return this.quotes.find((quote: StockQuote) => quote.symbol.id === symbol.id)
+  private openAlertEditor(symbolId: string, alertId: string): void {
+    this.editorSymbolId = symbolId
+    this.editorAlertId = alertId
+    AppStorage.set<string>('managementRoute', ManagementRoute.ALERT_EDITOR)
   }
 
-  private quoteFor(symbol: StockSymbol): StockQuote | undefined {
-    return this.quotes.find((quote: StockQuote) => quote.symbol.id === symbol.id)
+  private openPositionEditor(symbolId: string): void {
+    this.editorSymbolId = symbolId
+    AppStorage.set<string>('managementRoute', ManagementRoute.POSITION_EDITOR)
   }
 
-  private colorFor(quote: StockQuote | undefined): ResourceColor {
-    if (quote === undefined || quote.changePercent === 0) {
-      return '#AAB2C1'
-    }
-    return quote.changePercent > 0 ? '#FF5A63' : '#21C78B'
+  private closeEditor(): void {
+    AppStorage.set<string>('managementRoute', ManagementRoute.ROOT)
   }
 
-  private lastUpdatedText(): string {
-    if (this.lastUpdated <= 0) {
-      return '尚未更新'
+  @Builder
+  tabBarBuilder(icon: string, label: string, index: number) {
+    Column({ space: 3 }) {
+      Text(icon)
+        .fontSize(20)
+        .fontWeight(this.managementTab === index ? FontWeight.Bold : FontWeight.Regular)
+        .fontColor(this.managementTab === index ? '#6F9BFF' : '#758196')
+      Text(label)
+        .fontSize(11)
+        .fontWeight(this.managementTab === index ? FontWeight.Medium : FontWeight.Regular)
+        .fontColor(this.managementTab === index ? '#9DB8FF' : '#758196')
     }
-    const elapsedSeconds: number = Math.max(0, Math.floor((Date.now() - this.lastUpdated) / 1000))
-    if (elapsedSeconds < 60) {
-      return `${elapsedSeconds} 秒前更新`
+    .justifyContent(FlexAlign.Center)
+    .width('100%')
+    .height(68 + this.bottomSafeHeight)
+    .padding({ bottom: this.bottomSafeHeight })
+    .accessibilityText(`${label}${this.managementTab === index ? '，已选中' : ''}`)
+  }
+
+  @Builder
+  rootTabs() {
+    Tabs({ barPosition: BarPosition.End, index: this.managementTab }) {
+      TabContent() {
+        WatchlistPage({
+          onOpenAlertEditor: (symbolId: string, alertId: string) => this.openAlertEditor(symbolId, alertId),
+          onOpenPositionEditor: (symbolId: string) => this.openPositionEditor(symbolId)
+        })
+      }
+      .tabBar(this.tabBarBuilder('⌁', '自选', 0))
+
+      TabContent() {
+        AlertsPage({
+          onOpenEditor: (symbolId: string, alertId: string) => this.openAlertEditor(symbolId, alertId)
+        })
+      }
+      .tabBar(this.tabBarBuilder('◎', '提醒', 1))
+
+      TabContent() {
+        PositionsPage({
+          onOpenEditor: (symbolId: string) => this.openPositionEditor(symbolId)
+        })
+      }
+      .tabBar(this.tabBarBuilder('▣', '持仓', 2))
+
+      TabContent() {
+        SettingsPage()
+      }
+      .tabBar(this.tabBarBuilder('⚙', '设置', 3))
     }
-    if (elapsedSeconds < 3600) {
-      return `${Math.floor(elapsedSeconds / 60)} 分钟前更新`
-    }
-    return `${Math.floor(elapsedSeconds / 3600)} 小时前更新`
+    .width('100%')
+    .height('100%')
+    .vertical(false)
+    .scrollable(false)
+    .barMode(BarMode.Fixed)
+    .barHeight(68 + this.bottomSafeHeight)
+    .barBackgroundColor('#121720')
+    .onChange((index: number) => {
+      AppStorage.set<number>('managementTab', index)
+    })
   }
 
   build() {
-    Scroll() {
-      Column({ space: 18 }) {
-        Row() {
-          Column({ space: 4 }) {
-            Text('StockFloat')
-              .fontSize(28)
-              .fontWeight(FontWeight.Bold)
-              .fontColor('#F7F9FC')
-            Text('鸿蒙全局股票悬浮胶囊 · MVP')
-              .fontSize(13)
-              .fontColor('#8893A6')
-          }
-          .alignItems(HorizontalAlign.Start)
-          Blank()
-          Button(this.refreshing ? '刷新中' : '刷新')
-            .enabled(!this.refreshing)
-            .onClick(() => quoteStore.refresh())
-        }
-        .width('100%')
-
-        Column({ space: 10 }) {
-          Row() {
-            Text('全局悬浮')
-              .fontSize(17)
-              .fontWeight(FontWeight.Bold)
-              .fontColor('#EEF2F8')
-            Blank()
-            Button(this.floatVisible ? '关闭胶囊' : '开启胶囊')
-              .fontColor('#FFFFFF')
-              .backgroundColor(this.floatVisible ? '#3A414D' : '#346DFF')
-              .onClick(() => {
-                if (this.floatVisible) {
-                  floatWindowManager.hide()
-                } else {
-                  floatWindowManager.show()
-                }
-              })
-          }
-          .width('100%')
-
-          Text(this.floatStatus)
-            .fontSize(12)
-            .fontColor(this.floatStatus.includes('缺少') || this.floatStatus.includes('失败') ? '#FFB366' : '#8FA1BD')
-            .width('100%')
-          Text('提示：全局窗口需要受限权限 ACL；无权限时仍可用下方预览验证行情与胶囊交互。')
-            .fontSize(11)
-            .fontColor('#68758A')
-            .width('100%')
-        }
-        .padding(16)
-        .width('100%')
-        .backgroundColor('#171D27')
-        .borderRadius(18)
-
-        Column({ space: 10 }) {
-          Row() {
-            Text('应用内实时预览')
-              .fontSize(15)
-              .fontWeight(FontWeight.Medium)
-              .fontColor('#DCE2EC')
-            Blank()
-            Text(quoteStore.marketPhase())
-              .fontSize(11)
-              .fontColor('#8290A6')
-          }
-          .width('100%')
-
-          QuoteCapsule({
-            quote: this.selectedQuote(),
-            index: this.selectedIndex,
-            total: this.watchlist.length,
-            status: this.quoteStatus,
-            expanded: this.previewExpanded,
-            version: this.selectedIndex,
-            onPrevious: () => quoteStore.selectPrevious(),
-            onNext: () => quoteStore.selectNext(),
-            onToggle: () => {
-              this.previewExpanded = !this.previewExpanded
-              AppStorage.set<boolean>('previewExpanded', this.previewExpanded)
-            },
-            onRefresh: () => quoteStore.refresh(),
-            onClose: () => {
-              this.previewExpanded = false
-              AppStorage.set<boolean>('previewExpanded', false)
-            }
-          })
-            .width(this.previewExpanded ? 304 : 186)
-            .height(this.previewExpanded ? 264 : 54)
-        }
-        .padding(16)
-        .width('100%')
-        .alignItems(HorizontalAlign.Center)
-        .backgroundColor('#121720')
-        .borderRadius(18)
-
-        Column({ space: 12 }) {
-          Row() {
-            Text('自选股')
-              .fontSize(17)
-              .fontWeight(FontWeight.Bold)
-              .fontColor('#EEF2F8')
-            Blank()
-            Text(`${this.watchlist.length}/20`)
-              .fontSize(12)
-              .fontColor('#758196')
-          }
-          .width('100%')
-
-          ForEach(this.watchlist, (symbol: StockSymbol, index: number) => {
-            Row({ space: 12 }) {
-              Column({ space: 3 }) {
-                Text(this.quoteFor(symbol)?.name ?? symbol.displayCode)
-                  .fontSize(15)
-                  .fontWeight(index === this.selectedIndex ? FontWeight.Bold : FontWeight.Medium)
-                  .fontColor('#E7EBF2')
-                Text(symbol.displayCode)
-                  .fontSize(10)
-                  .fontColor('#68758A')
-              }
-              .alignItems(HorizontalAlign.Start)
-              .onClick(() => AppStorage.set<number>('selectedIndex', index))
-
-              Blank()
-
-              Column({ space: 3 }) {
-                Text(this.quoteFor(symbol)?.price.toFixed(2) ?? '--')
-                  .fontSize(15)
-                  .fontWeight(FontWeight.Medium)
-                  .fontColor('#F2F5FA')
-                Text(this.quoteFor(symbol) === undefined ? '--' : `${this.quoteFor(symbol)?.changePercent.toFixed(2)}%`)
-                  .fontSize(11)
-                  .fontColor(this.colorFor(this.quoteFor(symbol)))
-              }
-              .alignItems(HorizontalAlign.End)
-
-              if (index > 0) {
-                Button('置顶')
-                  .fontSize(11)
-                  .fontColor('#9DB8FF')
-                  .backgroundColor('#202C45')
-                  .onClick(() => quoteStore.moveSymbolToTop(symbol))
-              }
-
-              Button('删除')
-                .fontSize(11)
-                .fontColor('#FF8990')
-                .backgroundColor('#322128')
-                .onClick(() => quoteStore.removeSymbol(symbol))
-            }
-            .padding(12)
-            .width('100%')
-            .backgroundColor(index === this.selectedIndex ? '#222B39' : '#171D27')
-            .borderRadius(12)
-          }, (symbol: StockSymbol) => symbol.id)
-
-          Row({ space: 10 }) {
-            TextInput({ text: this.inputCode, placeholder: '输入 6 位代码，如 600036' })
-              .layoutWeight(1)
-              .height(44)
-              .fontColor('#E7EBF2')
-              .placeholderColor('#68758A')
-              .backgroundColor('#121720')
-              .onChange((value: string) => this.inputCode = value)
-            Button(this.adding ? '验证中' : '添加')
-              .height(44)
-              .enabled(!this.adding)
-              .onClick(async () => {
-                this.adding = true
-                const added: boolean = await quoteStore.addSymbol(this.inputCode)
-                if (added) {
-                  this.inputCode = ''
-                }
-                this.adding = false
-              })
-          }
-          .width('100%')
-        }
-        .padding(16)
-        .width('100%')
-        .backgroundColor('#121720')
-        .borderRadius(18)
-
-        Text(`${quoteStore.marketPhase()} · ${this.quoteStatus} · ${this.lastUpdatedText()}`)
-          .fontSize(11)
-          .fontColor('#68758A')
-          .padding({ bottom: this.bottomSafeHeight + 24 })
+    Stack() {
+      if (this.managementRoute === ManagementRoute.ALERT_EDITOR) {
+        AlertEditorPage({
+          initialSymbolId: this.editorSymbolId,
+          alertId: this.editorAlertId,
+          onBack: () => this.closeEditor()
+        })
+      } else if (this.managementRoute === ManagementRoute.POSITION_EDITOR) {
+        PositionEditorPage({
+          initialSymbolId: this.editorSymbolId,
+          onBack: () => this.closeEditor()
+        })
+      } else {
+        this.rootTabs()
       }
-      .padding({ left: 18, right: 18, top: this.topSafeHeight + 24 })
-      .width('100%')
     }
     .width('100%')
     .height('100%')

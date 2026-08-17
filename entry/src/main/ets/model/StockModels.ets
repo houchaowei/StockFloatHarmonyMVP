@@ -27,6 +27,19 @@ export class StockSymbol {
     return `深 ${this.code}`
   }
 
+  get priceDigits(): number {
+    // A-share stocks normally use two decimals. Exchange-traded funds and
+    // convertible bonds commonly require three decimals.
+    if (this.code.startsWith('1') || this.code.startsWith('5')) {
+      return 3
+    }
+    return 2
+  }
+
+  formatPrice(value: number): string {
+    return value.toFixed(this.priceDigits)
+  }
+
   static parse(input: string): StockSymbol | undefined {
     const normalized: string = input.trim().toLowerCase().replace(/\./g, '')
     const digits: string = normalized.replace(/[^0-9]/g, '')
@@ -64,10 +77,11 @@ export class StockQuote {
   changePercent: number
   quoteTimestamp: number
   fetchedTimestamp: number
+  source: string
 
   constructor(symbol: StockSymbol, name: string, price: number, previousClose: number,
     open: number, high: number, low: number, change: number, changePercent: number,
-    quoteTimestamp: number, fetchedTimestamp: number) {
+    quoteTimestamp: number, fetchedTimestamp: number, source: string = '腾讯') {
     this.symbol = symbol
     this.name = name
     this.price = price
@@ -79,6 +93,7 @@ export class StockQuote {
     this.changePercent = changePercent
     this.quoteTimestamp = quoteTimestamp
     this.fetchedTimestamp = fetchedTimestamp
+    this.source = source
   }
 }
 
@@ -87,10 +102,26 @@ export enum MarketPhase {
   TRADING = '交易中',
   LUNCH_BREAK = '午间休市',
   CLOSED = '已收盘',
-  WEEKEND = '周末休市'
+  WEEKEND = '周末休市',
+  HOLIDAY = '交易日休市'
 }
 
 export class ChinaMarketCalendar {
+  static exchangeDateKey(timestamp: number): string {
+    const date: Date = new Date(timestamp + 8 * 60 * 60 * 1000)
+    const year: string = date.getUTCFullYear().toString()
+    const month: string = (date.getUTCMonth() + 1).toString().padStart(2, '0')
+    const day: string = date.getUTCDate().toString().padStart(2, '0')
+    return `${year}${month}${day}`
+  }
+
+  static sameExchangeDay(left: number, right: number): boolean {
+    if (left <= 0 || right <= 0) {
+      return false
+    }
+    return ChinaMarketCalendar.exchangeDateKey(left) === ChinaMarketCalendar.exchangeDateKey(right)
+  }
+
   static phase(now: Date = new Date()): MarketPhase {
     // Always calculate against the exchange timezone, even if the phone is abroad.
     const utcTimestamp: number = now.getTime() + now.getTimezoneOffset() * 60 * 1000
@@ -126,6 +157,60 @@ export class ChinaMarketCalendar {
     if (phase === MarketPhase.CLOSED) {
       return 300000
     }
+    if (phase === MarketPhase.HOLIDAY) {
+      return 900000
+    }
     return 900000
+  }
+}
+
+export enum QuoteFreshness {
+  LIVE = '实时',
+  DELAYED = '稍有延迟',
+  STALE = '行情已过期',
+  CACHED = '离线缓存',
+  CLOSED = '收盘行情',
+  PAUSED = '后台已暂停',
+  UNAVAILABLE = '暂无行情'
+}
+
+export class QuoteFreshnessHelper {
+  static value(quote: StockQuote | undefined, phase: MarketPhase, backgroundActive: boolean,
+    now: number = Date.now()): QuoteFreshness {
+    if (quote === undefined) {
+      return QuoteFreshness.UNAVAILABLE
+    }
+    if (!backgroundActive && phase === MarketPhase.TRADING) {
+      return QuoteFreshness.PAUSED
+    }
+    const fetchedAge: number = Math.max(0, now - quote.fetchedTimestamp)
+    if (fetchedAge > 30 * 60 * 1000) {
+      return QuoteFreshness.CACHED
+    }
+    if (phase === MarketPhase.CLOSED || phase === MarketPhase.WEEKEND || phase === MarketPhase.HOLIDAY ||
+      phase === MarketPhase.LUNCH_BREAK || phase === MarketPhase.PRE_OPEN) {
+      return QuoteFreshness.CLOSED
+    }
+    const quoteAge: number = Math.max(0, now - quote.quoteTimestamp)
+    if (!ChinaMarketCalendar.sameExchangeDay(quote.quoteTimestamp, now) || quoteAge > 2 * 60 * 1000) {
+      return QuoteFreshness.STALE
+    }
+    if (quoteAge > 30 * 1000) {
+      return QuoteFreshness.DELAYED
+    }
+    return QuoteFreshness.LIVE
+  }
+
+  static color(freshness: QuoteFreshness): string {
+    if (freshness === QuoteFreshness.LIVE) {
+      return '#4AD7A5'
+    }
+    if (freshness === QuoteFreshness.DELAYED || freshness === QuoteFreshness.CLOSED) {
+      return '#F3B85B'
+    }
+    if (freshness === QuoteFreshness.UNAVAILABLE) {
+      return '#778398'
+    }
+    return '#FF8990'
   }
 }

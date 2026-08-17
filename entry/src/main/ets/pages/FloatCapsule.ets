@@ -1,6 +1,7 @@
 import { QuoteCapsule } from '../components/QuoteCapsule'
 import { floatWindowManager } from '../model/FloatWindowManager'
 import { quoteStore } from '../model/QuoteStore'
+import { PositionRecord, PriceSeries } from '../model/PersonalModels'
 import { StockQuote, StockSymbol } from '../model/StockModels'
 
 @Entry
@@ -12,39 +13,22 @@ struct FloatCapsule {
   @StorageLink('selectionTick') selectionTick: number = 0
   @StorageLink('quoteStatus') quoteStatus: string = '等待行情'
   @StorageLink('floatExpanded') expanded: boolean = false
+  @StorageLink('priceHistory') priceHistory: Array<PriceSeries> = []
+  @StorageLink('positions') positions: Array<PositionRecord> = []
+  @StorageLink('settingsTick') settingsTick: number = 0
+  @StorageLink('backgroundActive') backgroundActive: boolean = true
+  @StorageProp('privacyMode') privacyMode: boolean = false
+  @StorageProp('reverseColors') reverseColors: boolean = false
+  @StorageProp('capsuleOpacity') capsuleOpacity: number = 95
+  @StorageProp('capsuleMetric') capsuleMetric: string = 'both'
   @State renderTick: number = 0
-  private rotateTimer: number = -1
 
-  aboutToAppear(): void {
-    this.startRotateTimer()
-  }
-
-  aboutToDisappear(): void {
-    this.stopRotateTimer()
-  }
-
-  private startRotateTimer(): void {
-    if (this.rotateTimer >= 0) {
-      return
-    }
-    this.rotateTimer = setInterval(() => {
-      if (!this.expanded && this.watchlist.length > 1) {
-        quoteStore.selectNext()
-        this.renderTick += 1
-      }
-    }, 4000)
-  }
-
-  private stopRotateTimer(): void {
-    if (this.rotateTimer < 0) {
-      return
-    }
-    clearInterval(this.rotateTimer)
-    this.rotateTimer = -1
+  private selectedSymbol(): StockSymbol | undefined {
+    return this.watchlist[this.selectedIndex]
   }
 
   private selectedQuote(): StockQuote | undefined {
-    const _stateVersion: number = this.selectionTick + this.renderTick
+    const _stateVersion: number = this.selectionTick + this.renderTick + this.settingsTick
     if (_stateVersion < 0) {
       return undefined
     }
@@ -55,6 +39,20 @@ struct FloatCapsule {
     return this.quotes.find((quote: StockQuote) => quote.symbol.id === symbol.id)
   }
 
+  private selectedPosition(): PositionRecord | undefined {
+    const symbol: StockSymbol | undefined = this.selectedSymbol()
+    return symbol === undefined ? undefined :
+      this.positions.find((item: PositionRecord) => item.symbolId === symbol.id)
+  }
+
+  private selectedHistory(): Array<number> {
+    const symbol: StockSymbol | undefined = this.selectedSymbol()
+    if (symbol === undefined) {
+      return []
+    }
+    return this.priceHistory.find((item: PriceSeries) => item.symbolId === symbol.id)?.prices() ?? []
+  }
+
   build() {
     Stack() {
       QuoteCapsule({
@@ -63,7 +61,15 @@ struct FloatCapsule {
         total: this.watchlist.length,
         status: `${quoteStore.marketPhase()} · ${this.quoteStatus}`,
         expanded: this.expanded,
-        version: this.selectionTick + this.renderTick,
+        version: this.selectionTick + this.renderTick + this.settingsTick,
+        positionRecord: this.selectedPosition(),
+        history: this.selectedHistory(),
+        marketPhase: quoteStore.marketPhase(),
+        backgroundActive: this.backgroundActive,
+        privacyMode: this.privacyMode,
+        reverseColors: this.reverseColors,
+        opacityPercent: this.capsuleOpacity,
+        metricMode: this.capsuleMetric,
         onPrevious: () => {
           quoteStore.selectPrevious()
           this.renderTick += 1

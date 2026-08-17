@@ -2,6 +2,7 @@ import { http } from '@kit.NetworkKit'
 import { util } from '@kit.ArkTS'
 import { BusinessError } from '@kit.BasicServicesKit'
 import { StockQuote, StockSymbol } from './StockModels'
+import { QuoteProvider } from './QuoteProvider'
 
 export class QuoteProviderError extends Error {
   constructor(message: string) {
@@ -74,7 +75,7 @@ export class TencentQuoteParser {
   }
 }
 
-export class TencentQuoteProvider {
+export class TencentQuoteProvider implements QuoteProvider {
   async fetch(symbols: Array<StockSymbol>): Promise<Array<StockQuote>> {
     if (symbols.length === 0) {
       throw new QuoteProviderError('没有需要查询的股票')
@@ -89,7 +90,7 @@ export class TencentQuoteProvider {
         readTimeout: 10000,
         usingCache: false,
         header: {
-          'User-Agent': 'StockFloatHarmonyMVP/0.2 (personal prototype)',
+          'User-Agent': 'StockFloatHarmonyMVP/0.3 (personal prototype)',
           'Referer': 'https://gu.qq.com/'
         }
       })

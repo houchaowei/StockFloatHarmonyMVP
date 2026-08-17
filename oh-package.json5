@@ -1,7 +1,7 @@
 {
   "modelVersion": "5.0.0",
   "name": "stock-float-harmony-mvp",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "HarmonyOS global floating stock capsule MVP",
   "main": "",
   "author": "StockFloatMVP contributors",
