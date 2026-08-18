@@ -6,13 +6,19 @@
 [![Release](https://img.shields.io/github/v/release/houchaowei/StockFloatHarmonyMVP)](https://github.com/houchaowei/StockFloatHarmonyMVP/releases/latest)
 [![License](https://img.shields.io/github/license/houchaowei/StockFloatHarmonyMVP)](LICENSE)
 
-## 产品截图
+## App 使用截图
 
-![自选行情与应用内预览](assets/store-screenshots/stockfloat-intro-1.png)
+以下截图来自 v0.3.1 HarmonyOS 真机运行界面，展示当前白色主题、悬浮胶囊和对齐后的底部导航。
 
-![桌面全局悬浮胶囊](assets/store-screenshots/stockfloat-intro-2.png)
+<p align="center">
+  <img src="assets/readme-screenshots/stockfloat-home.jpeg" alt="自选行情与应用内胶囊预览" width="31%">
+  <img src="assets/readme-screenshots/stockfloat-alerts.jpeg" alt="价格提醒管理" width="31%">
+  <img src="assets/readme-screenshots/stockfloat-settings.jpeg" alt="应用与胶囊统一背景设置" width="31%">
+</p>
 
-![展开胶囊与快捷行情操作](assets/store-screenshots/stockfloat-intro-3.png)
+<p align="center">
+  自选行情与应用内预览 · 价格提醒管理 · 应用与胶囊统一背景设置
+</p>
 
 ## Release 下载
 
