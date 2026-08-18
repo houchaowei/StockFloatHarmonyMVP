@@ -1,9 +1,11 @@
 import { PositionRecord } from '../model/PersonalModels'
 import { personalStore } from '../model/PersonalStore'
 import { StockQuote, StockSymbol } from '../model/StockModels'
+import { ApplicationTheme } from '../model/ApplicationTheme'
 
 @Component
 export struct PositionEditorPage {
+  @StorageLink('capsuleBackground') capsuleBackground: string = 'black'
   @StorageLink('positions') positions: Array<PositionRecord> = []
   @StorageLink('watchlist') watchlist: Array<StockSymbol> = []
   @StorageLink('quotes') quotes: Array<StockQuote> = []
@@ -87,12 +89,12 @@ export struct PositionEditorPage {
 
   private profitColor(value: number): ResourceColor {
     if (this.privacyMode || value === 0) {
-      return '#AAB2C1'
+      return ApplicationTheme.color(this.capsuleBackground, '#AAB2C1')
     }
     if (this.reverseColors) {
-      return value > 0 ? '#21C78B' : '#FF5A63'
+      return value > 0 ? ApplicationTheme.color(this.capsuleBackground, '#21C78B') : ApplicationTheme.color(this.capsuleBackground, '#FF5A63')
     }
-    return value > 0 ? '#FF5A63' : '#21C78B'
+    return value > 0 ? ApplicationTheme.color(this.capsuleBackground, '#FF5A63') : ApplicationTheme.color(this.capsuleBackground, '#21C78B')
   }
 
   private async save(): Promise<void> {
@@ -121,7 +123,7 @@ export struct PositionEditorPage {
       },
       secondaryButton: {
         value: '删除',
-        fontColor: '#FF5A63',
+        fontColor: ApplicationTheme.color(this.capsuleBackground, '#FF5A63'),
         action: () => {
           personalStore.removePosition(this.selectedSymbolId)
           this.onBack()
@@ -138,17 +140,17 @@ export struct PositionEditorPage {
             .width(44)
             .height(44)
             .fontSize(28)
-            .backgroundColor('#252E3B')
+            .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#252E3B'))
             .accessibilityText('返回持仓列表')
             .onClick(() => this.onBack())
           Column({ space: 3 }) {
             Text(this.positionFor(this.selectedSymbolId) === undefined ? '新增持仓' : '编辑持仓')
               .fontSize(24)
               .fontWeight(FontWeight.Bold)
-              .fontColor('#F7F9FC')
+              .fontColor(ApplicationTheme.color(this.capsuleBackground, '#F7F9FC'))
             Text('成本与数量仅保存在本机')
               .fontSize(12)
-              .fontColor('#8893A6')
+              .fontColor(ApplicationTheme.color(this.capsuleBackground, '#8893A6'))
           }
           .alignItems(HorizontalAlign.Start)
         }
@@ -158,7 +160,7 @@ export struct PositionEditorPage {
           Text('持仓股票')
             .fontSize(13)
             .fontWeight(FontWeight.Medium)
-            .fontColor('#AAB5C6')
+            .fontColor(ApplicationTheme.color(this.capsuleBackground, '#AAB5C6'))
             .width('100%')
           List({ space: 8 }) {
             ForEach(this.watchlist, (symbol: StockSymbol) => {
@@ -166,8 +168,8 @@ export struct PositionEditorPage {
                 Button(this.symbolLabel(symbol))
                   .height(40)
                   .fontSize(11)
-                  .fontColor('#F2F5FA')
-                  .backgroundColor(symbol.id === this.selectedSymbolId ? '#346DFF' : '#252E3B')
+                  .fontColor(ApplicationTheme.color(this.capsuleBackground, '#F2F5FA'))
+                  .backgroundColor(symbol.id === this.selectedSymbolId ? ApplicationTheme.color(this.capsuleBackground, '#346DFF') : ApplicationTheme.color(this.capsuleBackground, '#252E3B'))
                   .onClick(() => this.selectSymbol(symbol.id))
               }
             }, (symbol: StockSymbol) => symbol.id)
@@ -181,58 +183,64 @@ export struct PositionEditorPage {
               Text(this.selectedName())
                 .fontSize(17)
                 .fontWeight(FontWeight.Bold)
-                .fontColor('#EEF2F8')
+                .fontColor(ApplicationTheme.color(this.capsuleBackground, '#EEF2F8'))
               Text(this.selectedCode())
                 .fontSize(11)
-                .fontColor('#758196')
+                .fontColor(ApplicationTheme.color(this.capsuleBackground, '#758196'))
             }
             .layoutWeight(1)
             .alignItems(HorizontalAlign.Start)
             Column({ space: 4 }) {
               Text('当前价')
                 .fontSize(10)
-                .fontColor('#8290A6')
+                .fontColor(ApplicationTheme.color(this.capsuleBackground, '#8290A6'))
               Text(this.currentPriceText())
                 .fontSize(22)
                 .fontWeight(FontWeight.Bold)
-                .fontColor('#F7F9FC')
+                .fontColor(ApplicationTheme.color(this.capsuleBackground, '#F7F9FC'))
             }
             .alignItems(HorizontalAlign.End)
           }
           .padding(14)
           .width('100%')
-          .backgroundColor('#171D27')
+          .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#171D27'))
           .borderRadius(12)
         }
         .padding(16)
         .width('100%')
-        .backgroundColor('#121720')
+        .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#121720'))
         .borderRadius(18)
 
         Column({ space: 12 }) {
           Text('持仓信息')
             .fontSize(17)
             .fontWeight(FontWeight.Bold)
-            .fontColor('#EEF2F8')
+            .fontColor(ApplicationTheme.color(this.capsuleBackground, '#EEF2F8'))
             .width('100%')
           TextInput({ text: this.costInput, placeholder: '成本价' })
             .height(48)
             .type(InputType.NUMBER_DECIMAL)
-            .fontColor('#E7EBF2')
-            .backgroundColor('#171D27')
+            .fontSize(15)
+            .fontColor(ApplicationTheme.color(this.capsuleBackground, '#E7EBF2'))
+            .placeholderColor(ApplicationTheme.color(this.capsuleBackground, '#AEB8C8'))
+            .placeholderFont({ size: 14 })
+            .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#171D27'))
             .onChange((value: string) => this.costInput = value)
           TextInput({ text: this.quantityInput, placeholder: '持仓数量' })
             .height(48)
             .type(InputType.NUMBER_DECIMAL)
-            .fontColor('#E7EBF2')
-            .backgroundColor('#171D27')
+            .fontSize(15)
+            .fontColor(ApplicationTheme.color(this.capsuleBackground, '#E7EBF2'))
+            .placeholderColor(ApplicationTheme.color(this.capsuleBackground, '#AEB8C8'))
+            .placeholderFont({ size: 14 })
+            .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#171D27'))
             .onChange((value: string) => this.quantityInput = value)
 
           if (this.previewProfit() !== undefined) {
             Row() {
               Text('按当前行情估算累计盈亏')
                 .fontSize(12)
-                .fontColor('#8290A6')
+                .fontColor(ApplicationTheme.color(this.capsuleBackground, '#8290A6'))
               Blank()
               Text(this.privacyMode ? '••••' : (this.previewProfit()?.toFixed(2) ?? '--'))
                 .fontSize(16)
@@ -241,39 +249,39 @@ export struct PositionEditorPage {
             }
             .padding(14)
             .width('100%')
-            .backgroundColor('#171D27')
+            .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#171D27'))
             .borderRadius(12)
           }
           if (this.privacyMode) {
             Text('隐私模式已开启；此处输入的成本与数量仅保存在本机，其他页面会隐藏。')
               .fontSize(11)
-              .fontColor('#8290A6')
+              .fontColor(ApplicationTheme.color(this.capsuleBackground, '#8290A6'))
               .width('100%')
           }
         }
         .padding(16)
         .width('100%')
-        .backgroundColor('#121720')
+        .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#121720'))
         .borderRadius(18)
 
         Button(this.saving ? '保存中' : '保存本地持仓')
           .height(50)
           .enabled(!this.saving && this.selectedSymbolId.length > 0)
           .fontWeight(FontWeight.Bold)
-          .backgroundColor('#346DFF')
+          .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#346DFF'))
           .onClick(() => this.save())
 
         if (this.positionFor(this.selectedSymbolId) !== undefined) {
           Button('删除这笔持仓')
             .height(46)
-            .fontColor('#FF8990')
-            .backgroundColor('#322128')
+            .fontColor(ApplicationTheme.color(this.capsuleBackground, '#FF8990'))
+            .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#322128'))
             .onClick(() => this.requestDelete())
         }
 
         Text(`${this.positionStatus}；不会上传、同步或发起交易。`)
           .fontSize(10)
-          .fontColor('#68758A')
+          .fontColor(ApplicationTheme.color(this.capsuleBackground, '#68758A'))
           .padding({ bottom: this.bottomSafeHeight + 24 })
       }
       .padding({ left: 18, right: 18, top: this.topSafeHeight + 20 })
@@ -281,7 +289,7 @@ export struct PositionEditorPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#0C1017')
+    .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#0C1017'))
     .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM])
   }
 }

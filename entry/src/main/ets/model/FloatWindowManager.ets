@@ -25,6 +25,7 @@ export class FloatWindowManager {
   private screenHeight: number = 1920
   private dataPreferences?: preferences.Preferences
   private suspendDelayInfo?: backgroundTaskManager.DelaySuspendInfo
+  private suspendDelayUnavailable: boolean = false
   private abilityInForeground: boolean = true
   private displayListenerRegistered: boolean = false
   private displayChangeListener: (displayId: number) => void = (_displayId: number) => {
@@ -285,7 +286,11 @@ export class FloatWindowManager {
   onAbilityForeground(): void {
     this.abilityInForeground = true
     this.cancelSuspendDelay()
+    this.suspendDelayUnavailable = false
     AppStorage.set<boolean>('backgroundActive', true)
+    if (this.floatWindow !== undefined) {
+      AppStorage.set<string>('floatStatus', '全局悬浮胶囊运行中')
+    }
   }
 
   async applyPresentationSettings(): Promise<void> {
@@ -394,7 +399,7 @@ export class FloatWindowManager {
   }
 
   private requestSuspendDelay(): void {
-    if (this.context === undefined || this.suspendDelayInfo !== undefined) {
+    if (this.context === undefined || this.suspendDelayInfo !== undefined || this.suspendDelayUnavailable) {
       return
     }
     try {
@@ -410,7 +415,16 @@ export class FloatWindowManager {
       )
     } catch (error) {
       const businessError: BusinessError = error as BusinessError
-      AppStorage.set<string>('floatStatus', `后台轮播保活失败 ${businessError.code}: ${businessError.message}`)
+      this.suspendDelayInfo = undefined
+      this.suspendDelayUnavailable = true
+      AppStorage.set<boolean>('backgroundActive', false)
+      if (businessError.code === 9900001 || businessError.code === 9900002) {
+        AppStorage.set<string>('floatStatus', '悬浮胶囊运行中 · 系统限制后台轮播')
+        console.info(`Transient background task unavailable on this device. Code: ${businessError.code}, message: ${businessError.message}`)
+      } else {
+        AppStorage.set<string>('floatStatus', '悬浮胶囊运行中 · 后台轮播暂不可用')
+        console.error(`Failed to request transient background task. Code: ${businessError.code}, message: ${businessError.message}`)
+      }
     }
   }
 

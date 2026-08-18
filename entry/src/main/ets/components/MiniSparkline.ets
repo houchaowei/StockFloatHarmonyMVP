@@ -3,6 +3,7 @@ export struct MiniSparkline {
   @Prop values: Array<number> = []
   @Prop lineColor: ResourceColor = '#4B7CFF'
   @Prop hidden: boolean = false
+  @Prop lightBackground: boolean = false
 
   private chartPoints(): Array<Array<number>> {
     if (this.values.length < 2) {
@@ -24,7 +25,7 @@ export struct MiniSparkline {
       if (this.hidden) {
         Text('隐私模式 · 走势已隐藏')
           .fontSize(11)
-          .fontColor('#697386')
+          .fontColor(this.lightBackground ? '#667180' : '#8994A7')
       } else if (this.values.length >= 2) {
         Polyline({ width: 250, height: 42 })
           .points(this.chartPoints())
@@ -34,12 +35,12 @@ export struct MiniSparkline {
       } else {
         Text('走势采样中')
           .fontSize(11)
-          .fontColor('#697386')
+          .fontColor(this.lightBackground ? '#667180' : '#8994A7')
       }
     }
     .width('100%')
     .height(42)
-    .backgroundColor('#301D2633')
+    .backgroundColor(this.lightBackground ? '#E9EEF4CC' : '#301D2633')
     .borderRadius(10)
   }
 }

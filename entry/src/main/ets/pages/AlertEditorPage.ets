@@ -1,9 +1,11 @@
 import { AlertKind, AlertRepeatMode, PriceAlert } from '../model/PersonalModels'
 import { personalStore } from '../model/PersonalStore'
 import { StockQuote, StockSymbol } from '../model/StockModels'
+import { ApplicationTheme } from '../model/ApplicationTheme'
 
 @Component
 export struct AlertEditorPage {
+  @StorageLink('capsuleBackground') capsuleBackground: string = 'black'
   @StorageLink('priceAlerts') priceAlerts: Array<PriceAlert> = []
   @StorageLink('watchlist') watchlist: Array<StockSymbol> = []
   @StorageLink('quotes') quotes: Array<StockQuote> = []
@@ -73,11 +75,11 @@ export struct AlertEditorPage {
   }
 
   private kindSelected(kind: AlertKind): ResourceColor {
-    return this.alertKind === kind ? '#346DFF' : '#252E3B'
+    return this.alertKind === kind ? ApplicationTheme.color(this.capsuleBackground, '#346DFF') : ApplicationTheme.color(this.capsuleBackground, '#252E3B')
   }
 
   private repeatSelected(mode: AlertRepeatMode): ResourceColor {
-    return this.repeatMode === mode ? '#203B34' : '#252E3B'
+    return this.repeatMode === mode ? ApplicationTheme.color(this.capsuleBackground, '#203B34') : ApplicationTheme.color(this.capsuleBackground, '#252E3B')
   }
 
   private unitText(): string {
@@ -114,7 +116,7 @@ export struct AlertEditorPage {
       },
       secondaryButton: {
         value: '删除',
-        fontColor: '#FF5A63',
+        fontColor: ApplicationTheme.color(this.capsuleBackground, '#FF5A63'),
         action: () => {
           personalStore.removeAlert(alert)
           this.onBack()
@@ -131,17 +133,17 @@ export struct AlertEditorPage {
             .width(44)
             .height(44)
             .fontSize(28)
-            .backgroundColor('#252E3B')
+            .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#252E3B'))
             .accessibilityText('返回提醒列表')
             .onClick(() => this.onBack())
           Column({ space: 3 }) {
             Text(this.alertId.length > 0 ? '编辑提醒' : '新建提醒')
               .fontSize(24)
               .fontWeight(FontWeight.Bold)
-              .fontColor('#F7F9FC')
+              .fontColor(ApplicationTheme.color(this.capsuleBackground, '#F7F9FC'))
             Text('设置到价或涨跌幅触发条件')
               .fontSize(12)
-              .fontColor('#8893A6')
+              .fontColor(ApplicationTheme.color(this.capsuleBackground, '#8893A6'))
           }
           .alignItems(HorizontalAlign.Start)
         }
@@ -151,7 +153,7 @@ export struct AlertEditorPage {
           Text('提醒对象')
             .fontSize(13)
             .fontWeight(FontWeight.Medium)
-            .fontColor('#AAB5C6')
+            .fontColor(ApplicationTheme.color(this.capsuleBackground, '#AAB5C6'))
             .width('100%')
           List({ space: 8 }) {
             ForEach(this.watchlist, (symbol: StockSymbol) => {
@@ -159,8 +161,8 @@ export struct AlertEditorPage {
                 Button(this.symbolLabel(symbol))
                   .height(40)
                   .fontSize(11)
-                  .fontColor('#F2F5FA')
-                  .backgroundColor(symbol.id === this.selectedSymbolId ? '#346DFF' : '#252E3B')
+                  .fontColor(ApplicationTheme.color(this.capsuleBackground, '#F2F5FA'))
+                  .backgroundColor(symbol.id === this.selectedSymbolId ? ApplicationTheme.color(this.capsuleBackground, '#346DFF') : ApplicationTheme.color(this.capsuleBackground, '#252E3B'))
                   .onClick(() => this.selectedSymbolId = symbol.id)
               }
             }, (symbol: StockSymbol) => symbol.id)
@@ -175,33 +177,33 @@ export struct AlertEditorPage {
               Text(this.selectedName())
                 .fontSize(17)
                 .fontWeight(FontWeight.Bold)
-                .fontColor('#EEF2F8')
+                .fontColor(ApplicationTheme.color(this.capsuleBackground, '#EEF2F8'))
               Text(this.selectedCode())
                 .fontSize(11)
-                .fontColor('#758196')
+                .fontColor(ApplicationTheme.color(this.capsuleBackground, '#758196'))
             }
             .layoutWeight(1)
             .alignItems(HorizontalAlign.Start)
             Text(this.currentPriceText())
               .fontSize(22)
               .fontWeight(FontWeight.Bold)
-              .fontColor('#F7F9FC')
+              .fontColor(ApplicationTheme.color(this.capsuleBackground, '#F7F9FC'))
           }
           .padding(14)
           .width('100%')
-          .backgroundColor('#171D27')
+          .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#171D27'))
           .borderRadius(12)
         }
         .padding(16)
         .width('100%')
-        .backgroundColor('#121720')
+        .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#121720'))
         .borderRadius(18)
 
         Column({ space: 12 }) {
           Text('触发条件')
             .fontSize(17)
             .fontWeight(FontWeight.Bold)
-            .fontColor('#EEF2F8')
+            .fontColor(ApplicationTheme.color(this.capsuleBackground, '#EEF2F8'))
             .width('100%')
           Row({ space: 8 }) {
             Button('价格高于')
@@ -234,32 +236,35 @@ export struct AlertEditorPage {
               .layoutWeight(1)
               .height(48)
               .type(InputType.NUMBER_DECIMAL)
-              .fontColor('#E7EBF2')
-              .backgroundColor('#171D27')
+              .fontSize(15)
+              .fontColor(ApplicationTheme.color(this.capsuleBackground, '#E7EBF2'))
+              .placeholderColor(ApplicationTheme.color(this.capsuleBackground, '#AEB8C8'))
+              .placeholderFont({ size: 14 })
+              .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#171D27'))
               .onChange((value: string) => this.thresholdInput = value)
             Text(this.unitText())
               .fontSize(14)
-              .fontColor('#AAB5C6')
+              .fontColor(ApplicationTheme.color(this.capsuleBackground, '#AAB5C6'))
               .width(28)
           }
           .width('100%')
           if (this.privacyMode) {
             Text('隐私模式已开启；此处输入的阈值仅保存在本机，列表中会隐藏。')
               .fontSize(11)
-              .fontColor('#8290A6')
+              .fontColor(ApplicationTheme.color(this.capsuleBackground, '#8290A6'))
               .width('100%')
           }
         }
         .padding(16)
         .width('100%')
-        .backgroundColor('#121720')
+        .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#121720'))
         .borderRadius(18)
 
         Column({ space: 12 }) {
           Text('提醒频率')
             .fontSize(17)
             .fontWeight(FontWeight.Bold)
-            .fontColor('#EEF2F8')
+            .fontColor(ApplicationTheme.color(this.capsuleBackground, '#EEF2F8'))
             .width('100%')
           Button('单次提醒 · 触发后停用')
             .height(44)
@@ -276,32 +281,32 @@ export struct AlertEditorPage {
         }
         .padding(16)
         .width('100%')
-        .backgroundColor('#121720')
+        .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#121720'))
         .borderRadius(18)
 
         Text('提醒依赖本机行情刷新，系统挂起、断网或应用停止刷新时不保证触发。')
           .fontSize(11)
-          .fontColor('#FFB366')
+          .fontColor(ApplicationTheme.color(this.capsuleBackground, '#FFB366'))
           .width('100%')
 
         Button(this.saving ? '保存中' : '保存提醒')
           .height(50)
           .enabled(!this.saving && this.selectedSymbolId.length > 0)
           .fontWeight(FontWeight.Bold)
-          .backgroundColor('#346DFF')
+          .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#346DFF'))
           .onClick(() => this.save())
 
         if (this.alertId.length > 0) {
           Button('删除这条提醒')
             .height(46)
-            .fontColor('#FF8990')
-            .backgroundColor('#322128')
+            .fontColor(ApplicationTheme.color(this.capsuleBackground, '#FF8990'))
+            .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#322128'))
             .onClick(() => this.requestDelete())
         }
 
         Text(this.alertStatus)
           .fontSize(10)
-          .fontColor('#68758A')
+          .fontColor(ApplicationTheme.color(this.capsuleBackground, '#68758A'))
           .padding({ bottom: this.bottomSafeHeight + 24 })
       }
       .padding({ left: 18, right: 18, top: this.topSafeHeight + 20 })
@@ -309,7 +314,7 @@ export struct AlertEditorPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#0C1017')
+    .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#0C1017'))
     .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM])
   }
 }

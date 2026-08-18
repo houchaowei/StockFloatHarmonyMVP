@@ -21,6 +21,7 @@ struct FloatCapsule {
   @StorageProp('reverseColors') reverseColors: boolean = false
   @StorageProp('capsuleOpacity') capsuleOpacity: number = 95
   @StorageProp('capsuleMetric') capsuleMetric: string = 'both'
+  @StorageProp('capsuleBackground') capsuleBackground: string = 'black'
   @State renderTick: number = 0
 
   private selectedSymbol(): StockSymbol | undefined {
@@ -70,6 +71,7 @@ struct FloatCapsule {
         reverseColors: this.reverseColors,
         opacityPercent: this.capsuleOpacity,
         metricMode: this.capsuleMetric,
+        backgroundStyle: this.capsuleBackground,
         onPrevious: () => {
           quoteStore.selectPrevious()
           this.renderTick += 1

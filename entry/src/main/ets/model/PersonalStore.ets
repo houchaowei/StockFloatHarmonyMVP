@@ -2,8 +2,9 @@ import { common, wantAgent, WantAgent } from '@kit.AbilityKit'
 import { preferences } from '@kit.ArkData'
 import { BusinessError } from '@kit.BasicServicesKit'
 import { notificationManager } from '@kit.NotificationKit'
-import { AlertKind, AlertRepeatMode, CapsuleMetric, CapsuleSize, PositionRecord, PriceAlert, PricePoint, PriceSeries } from './PersonalModels'
+import { AlertKind, AlertRepeatMode, CapsuleBackground, CapsuleMetric, CapsuleSize, PositionRecord, PriceAlert, PricePoint, PriceSeries } from './PersonalModels'
 import { MarketPhase, StockQuote } from './StockModels'
+import { ApplicationTheme } from './ApplicationTheme'
 
 const STATUS_NOTIFICATION_ID: number = 9100
 const APP_BUNDLE_NAME: string = 'com.stockfloat.stock.mvp'
@@ -31,6 +32,8 @@ export class PersonalStore {
       AppStorage.set<string>('capsuleSize', this.dataPreferences.getSync('capsule_size', CapsuleSize.STANDARD) as string)
       AppStorage.set<number>('capsuleOpacity', this.dataPreferences.getSync('capsule_opacity', 95) as number)
       AppStorage.set<string>('capsuleMetric', this.dataPreferences.getSync('capsule_metric', CapsuleMetric.BOTH) as string)
+      AppStorage.set<string>('capsuleBackground',
+        this.dataPreferences.getSync('capsule_background', CapsuleBackground.BLACK) as string)
       AppStorage.set<boolean>('privacyMode', this.dataPreferences.getSync('privacy_mode', false) as boolean)
       AppStorage.set<boolean>('reverseColors', this.dataPreferences.getSync('reverse_colors', false) as boolean)
       AppStorage.set<boolean>('autoRestoreFloat', this.dataPreferences.getSync('auto_restore_float', true) as boolean)
@@ -109,6 +112,22 @@ export class PersonalStore {
     AppStorage.set<string>('capsuleMetric', value)
     await this.persistValue('capsule_metric', value)
     this.bumpSettings()
+  }
+
+  async setCapsuleBackground(value: CapsuleBackground): Promise<void> {
+    AppStorage.set<string>('capsuleBackground', value)
+    await this.persistValue('capsule_background', value)
+    this.bumpSettings()
+    await this.applyWindowTheme(value)
+  }
+
+  private async applyWindowTheme(value: CapsuleBackground): Promise<void> {
+    try {
+      await ApplicationTheme.applyWindow(value)
+    } catch (error) {
+      const businessError: BusinessError = error as BusinessError
+      console.info(`Window theme will apply on next launch. Code: ${businessError.code}, message: ${businessError.message}`)
+    }
   }
 
   async setPrivacyMode(value: boolean): Promise<void> {
@@ -385,6 +404,7 @@ export class PersonalStore {
     AppStorage.setOrCreate<string>('capsuleSize', CapsuleSize.STANDARD)
     AppStorage.setOrCreate<number>('capsuleOpacity', 95)
     AppStorage.setOrCreate<string>('capsuleMetric', CapsuleMetric.BOTH)
+    AppStorage.setOrCreate<string>('capsuleBackground', CapsuleBackground.BLACK)
     AppStorage.setOrCreate<boolean>('privacyMode', false)
     AppStorage.setOrCreate<boolean>('reverseColors', false)
     AppStorage.setOrCreate<boolean>('autoRestoreFloat', true)

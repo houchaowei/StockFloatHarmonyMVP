@@ -1,7 +1,8 @@
 import { i18n } from '@kit.LocalizationKit'
 import { QuoteCapsule } from '../components/QuoteCapsule'
+import { ApplicationTheme } from '../model/ApplicationTheme'
 import { floatWindowManager } from '../model/FloatWindowManager'
-import { CapsuleDimensions, CapsuleMetric, CapsuleSize, PositionRecord, PriceAlert, PriceSeries } from '../model/PersonalModels'
+import { CapsuleBackground, CapsuleDimensions, CapsuleMetric, CapsuleSize, PositionRecord, PriceAlert, PriceSeries } from '../model/PersonalModels'
 import { personalStore } from '../model/PersonalStore'
 import { quoteStore } from '../model/QuoteStore'
 import { QuoteFreshness, QuoteFreshnessHelper, StockQuote, StockSymbol } from '../model/StockModels'
@@ -27,6 +28,7 @@ export struct WatchlistPage {
   @StorageLink('capsuleSize') capsuleSize: string = CapsuleSize.STANDARD
   @StorageLink('capsuleOpacity') capsuleOpacity: number = 95
   @StorageLink('capsuleMetric') capsuleMetric: string = CapsuleMetric.BOTH
+  @StorageLink('capsuleBackground') capsuleBackground: string = CapsuleBackground.BLACK
   @StorageLink('privacyMode') privacyMode: boolean = false
   @StorageLink('reverseColors') reverseColors: boolean = false
   @StorageProp('topSafeHeight') topSafeHeight: number = 0
@@ -90,12 +92,12 @@ export struct WatchlistPage {
 
   private colorFor(quote: StockQuote | undefined): ResourceColor {
     if (this.privacyMode || quote === undefined || quote.changePercent === 0) {
-      return '#AAB2C1'
+      return ApplicationTheme.color(this.capsuleBackground, '#AAB2C1')
     }
     if (this.reverseColors) {
-      return quote.changePercent > 0 ? '#21C78B' : '#FF5A63'
+      return quote.changePercent > 0 ? ApplicationTheme.color(this.capsuleBackground, '#21C78B') : ApplicationTheme.color(this.capsuleBackground, '#FF5A63')
     }
-    return quote.changePercent > 0 ? '#FF5A63' : '#21C78B'
+    return quote.changePercent > 0 ? ApplicationTheme.color(this.capsuleBackground, '#FF5A63') : ApplicationTheme.color(this.capsuleBackground, '#21C78B')
   }
 
   private displayName(symbol: StockSymbol): string {
@@ -176,7 +178,7 @@ export struct WatchlistPage {
       },
       secondaryButton: {
         value: '删除全部关联',
-        fontColor: '#FF5A63',
+        fontColor: ApplicationTheme.color(this.capsuleBackground, '#FF5A63'),
         action: () => this.removeSymbolAndRelated(symbol)
       }
     })
@@ -215,10 +217,10 @@ export struct WatchlistPage {
             Text('StockFloat')
               .fontSize(28)
               .fontWeight(FontWeight.Bold)
-              .fontColor('#F7F9FC')
+              .fontColor(ApplicationTheme.color(this.capsuleBackground, '#F7F9FC'))
             Text('自选行情与悬浮胶囊')
               .fontSize(13)
-              .fontColor('#8893A6')
+              .fontColor(ApplicationTheme.color(this.capsuleBackground, '#8893A6'))
           }
           .alignItems(HorizontalAlign.Start)
           Blank()
@@ -235,29 +237,29 @@ export struct WatchlistPage {
               Text('全局悬浮')
                 .fontSize(17)
                 .fontWeight(FontWeight.Bold)
-                .fontColor('#EEF2F8')
+                .fontColor(ApplicationTheme.color(this.capsuleBackground, '#EEF2F8'))
               Text(this.floatStatus)
                 .fontSize(12)
-                .fontColor(this.floatStatus.includes('失败') || this.floatStatus.includes('缺少') ? '#FFB366' : '#8FA1BD')
+                .fontColor(this.floatStatus.includes('失败') || this.floatStatus.includes('缺少') ? ApplicationTheme.color(this.capsuleBackground, '#FFB366') : ApplicationTheme.color(this.capsuleBackground, '#8FA1BD'))
                 .maxLines(2)
             }
             .layoutWeight(1)
             .alignItems(HorizontalAlign.Start)
             Button(this.floatVisible ? '关闭胶囊' : '开启胶囊')
               .height(44)
-              .fontColor('#FFFFFF')
-              .backgroundColor(this.floatVisible ? '#3A414D' : '#346DFF')
+              .fontColor(ApplicationTheme.color(this.capsuleBackground, '#FFFFFF'))
+              .backgroundColor(this.floatVisible ? ApplicationTheme.color(this.capsuleBackground, '#3A414D') : ApplicationTheme.color(this.capsuleBackground, '#346DFF'))
               .onClick(() => this.floatVisible ? floatWindowManager.hide() : floatWindowManager.show())
           }
           .width('100%')
           Text('悬浮显示与后台刷新是两种状态；系统挂起后会标记“后台已暂停”。')
             .fontSize(11)
-            .fontColor('#68758A')
+            .fontColor(ApplicationTheme.color(this.capsuleBackground, '#68758A'))
             .width('100%')
         }
         .padding(16)
         .width('100%')
-        .backgroundColor('#171D27')
+        .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#171D27'))
         .borderRadius(18)
 
         Column({ space: 10 }) {
@@ -265,11 +267,11 @@ export struct WatchlistPage {
             Text('应用内实时预览')
               .fontSize(15)
               .fontWeight(FontWeight.Medium)
-              .fontColor('#DCE2EC')
+              .fontColor(ApplicationTheme.color(this.capsuleBackground, '#DCE2EC'))
             Blank()
             Text(quoteStore.marketPhase())
               .fontSize(11)
-              .fontColor('#8290A6')
+              .fontColor(ApplicationTheme.color(this.capsuleBackground, '#8290A6'))
           }
           .width('100%')
           QuoteCapsule({
@@ -287,6 +289,7 @@ export struct WatchlistPage {
             reverseColors: this.reverseColors,
             opacityPercent: this.capsuleOpacity,
             metricMode: this.capsuleMetric,
+            backgroundStyle: this.capsuleBackground,
             onPrevious: () => quoteStore.selectPrevious(),
             onNext: () => quoteStore.selectNext(),
             onToggle: () => {
@@ -307,7 +310,7 @@ export struct WatchlistPage {
         .padding(16)
         .width('100%')
         .alignItems(HorizontalAlign.Center)
-        .backgroundColor('#121720')
+        .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#121720'))
         .borderRadius(18)
 
         Column({ space: 12 }) {
@@ -315,19 +318,21 @@ export struct WatchlistPage {
             Text('自选股')
               .fontSize(17)
               .fontWeight(FontWeight.Bold)
-              .fontColor('#EEF2F8')
+              .fontColor(ApplicationTheme.color(this.capsuleBackground, '#EEF2F8'))
             Blank()
             Text(`${this.watchlist.length}/20 · 长按拖动排序`)
               .fontSize(11)
-              .fontColor('#758196')
+              .fontColor(ApplicationTheme.color(this.capsuleBackground, '#758196'))
           }
           .width('100%')
 
           TextInput({ text: this.searchQuery, placeholder: '搜索当前自选：名称 / 拼音 / 代码' })
             .height(44)
-            .fontColor('#E7EBF2')
-            .placeholderColor('#68758A')
-            .backgroundColor('#171D27')
+            .fontSize(14)
+            .fontColor(ApplicationTheme.color(this.capsuleBackground, '#E7EBF2'))
+            .placeholderColor(ApplicationTheme.color(this.capsuleBackground, '#AEB8C8'))
+            .placeholderFont({ size: 13 })
+            .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#171D27'))
             .onChange((value: string) => this.searchQuery = value)
 
           Row({ space: 8 }) {
@@ -337,7 +342,7 @@ export struct WatchlistPage {
             if (this.undoAvailable) {
               Button('撤销删除')
                 .height(40)
-                .fontColor('#9DB8FF')
+                .fontColor(ApplicationTheme.color(this.capsuleBackground, '#9DB8FF'))
                 .onClick(() => quoteStore.undoRemove())
             }
           }
@@ -346,7 +351,7 @@ export struct WatchlistPage {
           if (this.undoAvailable) {
             Text(`${this.privacyMode ? '已删除一只自选' : this.undoMessage}，可在 6 秒内撤销`)
               .fontSize(11)
-              .fontColor('#FFB366')
+              .fontColor(ApplicationTheme.color(this.capsuleBackground, '#FFB366'))
               .width('100%')
           }
 
@@ -357,17 +362,18 @@ export struct WatchlistPage {
                   Row({ space: 10 }) {
                     Text('≡')
                       .fontSize(18)
-                      .fontColor(this.searchQuery.length === 0 ? '#71809A' : '#3F4858')
+                      .fontColor(this.searchQuery.length === 0 ? ApplicationTheme.color(this.capsuleBackground, '#71809A') : ApplicationTheme.color(this.capsuleBackground, '#3F4858'))
                       .width(24)
                     Column({ space: 3 }) {
                       Text(this.displayName(symbol))
                         .fontSize(15)
                         .fontWeight(symbol.id === this.selectedSymbol()?.id ? FontWeight.Bold : FontWeight.Medium)
-                        .fontColor('#E7EBF2')
+                        .fontColor(ApplicationTheme.color(this.capsuleBackground, '#E7EBF2'))
                         .maxLines(1)
                       Text(`${this.privacyMode ? '代码已隐藏' : symbol.displayCode} · ${this.freshnessFor(this.quoteFor(symbol))}`)
                         .fontSize(11)
-                        .fontColor(QuoteFreshnessHelper.color(this.freshnessFor(this.quoteFor(symbol))))
+                        .fontColor(ApplicationTheme.color(this.capsuleBackground,
+                          QuoteFreshnessHelper.color(this.freshnessFor(this.quoteFor(symbol)))))
                     }
                     .layoutWeight(1)
                     .alignItems(HorizontalAlign.Start)
@@ -375,7 +381,7 @@ export struct WatchlistPage {
                       Text(this.displayPrice(this.quoteFor(symbol)))
                         .fontSize(15)
                         .fontWeight(FontWeight.Medium)
-                        .fontColor('#F2F5FA')
+                        .fontColor(ApplicationTheme.color(this.capsuleBackground, '#F2F5FA'))
                       Text(this.privacyMode || this.quoteFor(symbol) === undefined ? '••••' :
                         `${this.quoteFor(symbol)?.changePercent.toFixed(2)}%`)
                         .fontSize(11)
@@ -390,26 +396,26 @@ export struct WatchlistPage {
                     Button('设提醒')
                       .height(38)
                       .fontSize(11)
-                      .backgroundColor('#243554')
+                      .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#243554'))
                       .onClick(() => this.onOpenAlertEditor(symbol.id, ''))
                     Button(this.positionFor(symbol.id) === undefined ? '记持仓' : '改持仓')
                       .height(38)
                       .fontSize(11)
-                      .backgroundColor('#203B34')
+                      .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#203B34'))
                       .onClick(() => this.onOpenPositionEditor(symbol.id))
                     Blank()
                     Button('删除')
                       .height(38)
                       .fontSize(11)
-                      .fontColor('#FF8990')
-                      .backgroundColor('#322128')
+                      .fontColor(ApplicationTheme.color(this.capsuleBackground, '#FF8990'))
+                      .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#322128'))
                       .onClick(() => this.requestRemove(symbol))
                   }
                   .width('100%')
                 }
                 .padding(10)
                 .width('100%')
-                .backgroundColor(symbol.id === this.selectedSymbol()?.id ? '#222B39' : '#171D27')
+                .backgroundColor(symbol.id === this.selectedSymbol()?.id ? ApplicationTheme.color(this.capsuleBackground, '#222B39') : ApplicationTheme.color(this.capsuleBackground, '#171D27'))
                 .borderRadius(12)
               }
             }, (symbol: StockSymbol) => symbol.id)
@@ -426,9 +432,11 @@ export struct WatchlistPage {
             TextInput({ text: this.inputCode, placeholder: '代码 / 中文名 / 拼音，如 600036、招商银行' })
               .layoutWeight(1)
               .height(44)
-              .fontColor('#E7EBF2')
-              .placeholderColor('#68758A')
-              .backgroundColor('#171D27')
+              .fontSize(14)
+              .fontColor(ApplicationTheme.color(this.capsuleBackground, '#E7EBF2'))
+              .placeholderColor(ApplicationTheme.color(this.capsuleBackground, '#AEB8C8'))
+              .placeholderFont({ size: 13 })
+              .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#171D27'))
               .onChange((value: string) => this.inputCode = value)
             Button(this.adding ? '验证中' : '添加')
               .height(44)
@@ -446,12 +454,12 @@ export struct WatchlistPage {
         }
         .padding(16)
         .width('100%')
-        .backgroundColor('#121720')
+        .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#121720'))
         .borderRadius(18)
 
         Text(`${quoteStore.marketPhase()} · ${this.privacyMode ? '行情状态已隐藏' : this.quoteStatus} · ${this.lastUpdatedText()}`)
           .fontSize(11)
-          .fontColor('#68758A')
+          .fontColor(ApplicationTheme.color(this.capsuleBackground, '#68758A'))
           .padding({ bottom: 24 })
       }
       .padding({ left: 18, right: 18, top: this.topSafeHeight + 24 })
@@ -459,6 +467,6 @@ export struct WatchlistPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#0C1017')
+    .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#0C1017'))
   }
 }

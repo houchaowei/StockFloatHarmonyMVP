@@ -1,11 +1,13 @@
 import { floatWindowManager } from '../model/FloatWindowManager'
-import { CapsuleMetric, CapsuleSize } from '../model/PersonalModels'
+import { ApplicationTheme } from '../model/ApplicationTheme'
+import { CapsuleBackground, CapsuleMetric, CapsuleSize } from '../model/PersonalModels'
 import { personalStore } from '../model/PersonalStore'
 import { quoteStore } from '../model/QuoteStore'
 import { QuoteFreshness, QuoteFreshnessHelper, StockQuote, StockSymbol } from '../model/StockModels'
 
 @Component
 struct SettingSwitchRow {
+  @StorageProp('capsuleBackground') capsuleBackground: string = 'black'
   @Prop title: string = ''
   @Prop description: string = ''
   @Prop value: boolean = false
@@ -17,16 +19,16 @@ struct SettingSwitchRow {
         Text(this.title)
           .fontSize(14)
           .fontWeight(FontWeight.Medium)
-          .fontColor('#E7EBF2')
+          .fontColor(ApplicationTheme.color(this.capsuleBackground, '#E7EBF2'))
         Text(this.description)
           .fontSize(10)
-          .fontColor('#758196')
+          .fontColor(ApplicationTheme.color(this.capsuleBackground, '#758196'))
           .maxLines(2)
       }
       .layoutWeight(1)
       .alignItems(HorizontalAlign.Start)
       Toggle({ type: ToggleType.Switch, isOn: this.value })
-        .selectedColor('#346DFF')
+        .selectedColor(ApplicationTheme.color(this.capsuleBackground, '#346DFF'))
         .onChange((value: boolean) => this.onChange(value))
     }
     .padding({ top: 10, bottom: 10 })
@@ -42,6 +44,7 @@ export struct SettingsPage {
   @StorageLink('capsuleSize') capsuleSize: string = CapsuleSize.STANDARD
   @StorageLink('capsuleOpacity') capsuleOpacity: number = 95
   @StorageLink('capsuleMetric') capsuleMetric: string = CapsuleMetric.BOTH
+  @StorageLink('capsuleBackground') capsuleBackground: string = CapsuleBackground.BLACK
   @StorageLink('privacyMode') privacyMode: boolean = false
   @StorageLink('reverseColors') reverseColors: boolean = false
   @StorageLink('autoRestoreFloat') autoRestoreFloat: boolean = true
@@ -55,11 +58,11 @@ export struct SettingsPage {
   @StorageProp('topSafeHeight') topSafeHeight: number = 0
 
   private selectedButton(selected: boolean): ResourceColor {
-    return selected ? '#346DFF' : '#252E3B'
+    return selected ? ApplicationTheme.color(this.capsuleBackground, '#346DFF') : ApplicationTheme.color(this.capsuleBackground, '#252E3B')
   }
 
   private greenSelected(selected: boolean): ResourceColor {
-    return selected ? '#203B34' : '#252E3B'
+    return selected ? ApplicationTheme.color(this.capsuleBackground, '#203B34') : ApplicationTheme.color(this.capsuleBackground, '#252E3B')
   }
 
   private async setCapsuleSize(size: CapsuleSize): Promise<void> {
@@ -105,10 +108,10 @@ export struct SettingsPage {
           Text('设置')
             .fontSize(28)
             .fontWeight(FontWeight.Bold)
-            .fontColor('#F7F9FC')
+            .fontColor(ApplicationTheme.color(this.capsuleBackground, '#F7F9FC'))
           Text('悬浮胶囊、刷新、通知和隐私')
             .fontSize(13)
-            .fontColor('#8893A6')
+            .fontColor(ApplicationTheme.color(this.capsuleBackground, '#8893A6'))
         }
         .alignItems(HorizontalAlign.Start)
         .width('100%')
@@ -117,12 +120,12 @@ export struct SettingsPage {
           Text('悬浮胶囊')
             .fontSize(17)
             .fontWeight(FontWeight.Bold)
-            .fontColor('#EEF2F8')
+            .fontColor(ApplicationTheme.color(this.capsuleBackground, '#EEF2F8'))
             .width('100%')
 
           Text('尺寸')
             .fontSize(11)
-            .fontColor('#8290A6')
+            .fontColor(ApplicationTheme.color(this.capsuleBackground, '#8290A6'))
             .width('100%')
           Row({ space: 8 }) {
             Button('紧凑')
@@ -145,7 +148,7 @@ export struct SettingsPage {
 
           Text('透明度')
             .fontSize(11)
-            .fontColor('#8290A6')
+            .fontColor(ApplicationTheme.color(this.capsuleBackground, '#8290A6'))
             .width('100%')
           Row({ space: 8 }) {
             ForEach([70, 85, 95], (opacity: number) => {
@@ -158,9 +161,27 @@ export struct SettingsPage {
           }
           .width('100%')
 
+          Text('应用与胶囊背景')
+            .fontSize(11)
+            .fontColor(ApplicationTheme.color(this.capsuleBackground, '#8290A6'))
+            .width('100%')
+          Row({ space: 8 }) {
+            Button('黑色背景')
+              .layoutWeight(1)
+              .height(42)
+              .backgroundColor(this.selectedButton(this.capsuleBackground === CapsuleBackground.BLACK))
+              .onClick(() => personalStore.setCapsuleBackground(CapsuleBackground.BLACK))
+            Button('白色背景')
+              .layoutWeight(1)
+              .height(42)
+              .backgroundColor(this.selectedButton(this.capsuleBackground === CapsuleBackground.WHITE))
+              .onClick(() => personalStore.setCapsuleBackground(CapsuleBackground.WHITE))
+          }
+          .width('100%')
+
           Text('展示内容')
             .fontSize(11)
-            .fontColor('#8290A6')
+            .fontColor(ApplicationTheme.color(this.capsuleBackground, '#8290A6'))
             .width('100%')
           Row({ space: 8 }) {
             Button('价格+涨跌')
@@ -199,7 +220,7 @@ export struct SettingsPage {
           if (this.rotationEnabled) {
             Text('轮播间隔')
               .fontSize(11)
-              .fontColor('#8290A6')
+              .fontColor(ApplicationTheme.color(this.capsuleBackground, '#8290A6'))
               .width('100%')
             List({ space: 8 }) {
               ForEach([2, 4, 8, 12, 30], (seconds: number) => {
@@ -222,10 +243,10 @@ export struct SettingsPage {
             Text('固定股票')
               .fontSize(14)
               .fontWeight(FontWeight.Medium)
-              .fontColor('#E7EBF2')
+              .fontColor(ApplicationTheme.color(this.capsuleBackground, '#E7EBF2'))
             Text(this.pinnedName())
               .fontSize(10)
-              .fontColor('#758196')
+              .fontColor(ApplicationTheme.color(this.capsuleBackground, '#758196'))
           }
           .alignItems(HorizontalAlign.Start)
           .width('100%')
@@ -234,7 +255,7 @@ export struct SettingsPage {
               .layoutWeight(1)
               .height(42)
               .enabled(this.selectedSymbolId().length > 0)
-              .backgroundColor(this.pinnedSymbolId.length > 0 ? '#252E3B' : '#243554')
+              .backgroundColor(this.pinnedSymbolId.length > 0 ? ApplicationTheme.color(this.capsuleBackground, '#252E3B') : ApplicationTheme.color(this.capsuleBackground, '#243554'))
               .onClick(() => personalStore.setPinnedSymbol(this.selectedSymbolId()))
             if (this.pinnedSymbolId.length > 0) {
               Button('取消固定')
@@ -253,18 +274,18 @@ export struct SettingsPage {
         }
         .padding(16)
         .width('100%')
-        .backgroundColor('#121720')
+        .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#121720'))
         .borderRadius(18)
 
         Column({ space: 12 }) {
           Text('行情与通知')
             .fontSize(17)
             .fontWeight(FontWeight.Bold)
-            .fontColor('#EEF2F8')
+            .fontColor(ApplicationTheme.color(this.capsuleBackground, '#EEF2F8'))
             .width('100%')
           Text('交易时段刷新间隔')
             .fontSize(11)
-            .fontColor('#8290A6')
+            .fontColor(ApplicationTheme.color(this.capsuleBackground, '#8290A6'))
             .width('100%')
           Row({ space: 8 }) {
             ForEach([5, 10, 30], (seconds: number) => {
@@ -287,10 +308,10 @@ export struct SettingsPage {
               Text('通知权限')
                 .fontSize(14)
                 .fontWeight(FontWeight.Medium)
-                .fontColor('#E7EBF2')
+                .fontColor(ApplicationTheme.color(this.capsuleBackground, '#E7EBF2'))
               Text(this.alertStatus)
                 .fontSize(10)
-                .fontColor('#758196')
+                .fontColor(ApplicationTheme.color(this.capsuleBackground, '#758196'))
                 .maxLines(2)
             }
             .layoutWeight(1)
@@ -303,19 +324,19 @@ export struct SettingsPage {
           .width('100%')
           Text('系统实况窗不允许第三方应用直接创建；常驻通知仅作为降级展示。')
             .fontSize(10)
-            .fontColor('#68758A')
+            .fontColor(ApplicationTheme.color(this.capsuleBackground, '#68758A'))
             .width('100%')
         }
         .padding(16)
         .width('100%')
-        .backgroundColor('#121720')
+        .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#121720'))
         .borderRadius(18)
 
         Column({ space: 6 }) {
           Text('外观与隐私')
             .fontSize(17)
             .fontWeight(FontWeight.Bold)
-            .fontColor('#EEF2F8')
+            .fontColor(ApplicationTheme.color(this.capsuleBackground, '#EEF2F8'))
             .width('100%')
           SettingSwitchRow({
             title: '隐私模式',
@@ -325,7 +346,7 @@ export struct SettingsPage {
           })
           Text('涨跌颜色')
             .fontSize(11)
-            .fontColor('#8290A6')
+            .fontColor(ApplicationTheme.color(this.capsuleBackground, '#8290A6'))
             .width('100%')
           Row({ space: 8 }) {
             Button('红涨绿跌')
@@ -343,17 +364,17 @@ export struct SettingsPage {
         }
         .padding(16)
         .width('100%')
-        .backgroundColor('#121720')
+        .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#121720'))
         .borderRadius(18)
 
         Column({ space: 5 }) {
           Text('关于 StockFloat')
             .fontSize(14)
             .fontWeight(FontWeight.Medium)
-            .fontColor('#DCE2EC')
+            .fontColor(ApplicationTheme.color(this.capsuleBackground, '#DCE2EC'))
           Text('个人股票悬浮助手 · 所有持仓与个性化数据保存在本机')
             .fontSize(10)
-            .fontColor('#68758A')
+            .fontColor(ApplicationTheme.color(this.capsuleBackground, '#68758A'))
         }
         .alignItems(HorizontalAlign.Start)
         .padding({ bottom: 24 })
@@ -364,6 +385,6 @@ export struct SettingsPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#0C1017')
+    .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#0C1017'))
   }
 }

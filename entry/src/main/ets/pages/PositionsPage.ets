@@ -1,8 +1,10 @@
 import { PositionRecord } from '../model/PersonalModels'
 import { StockQuote, StockSymbol } from '../model/StockModels'
+import { ApplicationTheme } from '../model/ApplicationTheme'
 
 @Component
 export struct PositionsPage {
+  @StorageLink('capsuleBackground') capsuleBackground: string = 'black'
   @StorageLink('positions') positions: Array<PositionRecord> = []
   @StorageLink('watchlist') watchlist: Array<StockSymbol> = []
   @StorageLink('quotes') quotes: Array<StockQuote> = []
@@ -89,12 +91,12 @@ export struct PositionsPage {
 
   private profitColor(value: number): ResourceColor {
     if (this.privacyMode || value === 0) {
-      return '#AAB2C1'
+      return ApplicationTheme.color(this.capsuleBackground, '#AAB2C1')
     }
     if (this.reverseColors) {
-      return value > 0 ? '#21C78B' : '#FF5A63'
+      return value > 0 ? ApplicationTheme.color(this.capsuleBackground, '#21C78B') : ApplicationTheme.color(this.capsuleBackground, '#FF5A63')
     }
-    return value > 0 ? '#FF5A63' : '#21C78B'
+    return value > 0 ? ApplicationTheme.color(this.capsuleBackground, '#FF5A63') : ApplicationTheme.color(this.capsuleBackground, '#21C78B')
   }
 
   private defaultSymbolId(): string {
@@ -109,17 +111,17 @@ export struct PositionsPage {
             Text('本地持仓')
               .fontSize(28)
               .fontWeight(FontWeight.Bold)
-              .fontColor('#F7F9FC')
+              .fontColor(ApplicationTheme.color(this.capsuleBackground, '#F7F9FC'))
             Text('成本、市值和盈亏仅在本机计算')
               .fontSize(13)
-              .fontColor('#8893A6')
+              .fontColor(ApplicationTheme.color(this.capsuleBackground, '#8893A6'))
           }
           .alignItems(HorizontalAlign.Start)
           Blank()
           Button('新增持仓')
             .height(44)
             .enabled(this.watchlist.length > 0)
-            .backgroundColor('#346DFF')
+            .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#346DFF'))
             .onClick(() => this.onOpenEditor(this.defaultSymbolId()))
         }
         .width('100%')
@@ -129,18 +131,18 @@ export struct PositionsPage {
             Column({ space: 4 }) {
               Text(this.missingQuoteCount() > 0 ? '可估算市值' : '当前市值')
                 .fontSize(11)
-                .fontColor('#8290A6')
+                .fontColor(ApplicationTheme.color(this.capsuleBackground, '#8290A6'))
               Text(this.money(this.totalMarketValue()))
                 .fontSize(26)
                 .fontWeight(FontWeight.Bold)
-                .fontColor('#F7F9FC')
+                .fontColor(ApplicationTheme.color(this.capsuleBackground, '#F7F9FC'))
             }
             .alignItems(HorizontalAlign.Start)
             Blank()
             Column({ space: 4 }) {
               Text('累计盈亏')
                 .fontSize(11)
-                .fontColor('#8290A6')
+                .fontColor(ApplicationTheme.color(this.capsuleBackground, '#8290A6'))
               Text(this.money(this.totalProfit()))
                 .fontSize(20)
                 .fontWeight(FontWeight.Bold)
@@ -152,7 +154,7 @@ export struct PositionsPage {
           Row() {
             Text(`总成本 ${this.money(this.totalCost())}`)
               .fontSize(12)
-              .fontColor('#AAB5C6')
+              .fontColor(ApplicationTheme.color(this.capsuleBackground, '#AAB5C6'))
             Blank()
             Text(`今日 ${this.money(this.todayProfit())}`)
               .fontSize(12)
@@ -162,30 +164,30 @@ export struct PositionsPage {
         }
         .padding(18)
         .width('100%')
-        .backgroundColor('#171D27')
+        .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#171D27'))
         .borderRadius(18)
 
         if (this.positions.length === 0) {
           Column({ space: 12 }) {
             Text('▣')
               .fontSize(34)
-              .fontColor('#4D5B70')
+              .fontColor(ApplicationTheme.color(this.capsuleBackground, '#4D5B70'))
             Text('还没有本地持仓')
               .fontSize(16)
               .fontWeight(FontWeight.Medium)
-              .fontColor('#DCE2EC')
+              .fontColor(ApplicationTheme.color(this.capsuleBackground, '#DCE2EC'))
             Text('录入成本价和数量后，胶囊也可显示持仓盈亏')
               .fontSize(12)
-              .fontColor('#758196')
+              .fontColor(ApplicationTheme.color(this.capsuleBackground, '#758196'))
             Button('录入第一笔持仓')
               .height(44)
               .enabled(this.watchlist.length > 0)
-              .backgroundColor('#346DFF')
+              .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#346DFF'))
               .onClick(() => this.onOpenEditor(this.defaultSymbolId()))
           }
           .padding(32)
           .width('100%')
-          .backgroundColor('#121720')
+          .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#121720'))
           .borderRadius(18)
         }
 
@@ -195,11 +197,11 @@ export struct PositionsPage {
               Text('持仓明细')
                 .fontSize(17)
                 .fontWeight(FontWeight.Bold)
-                .fontColor('#EEF2F8')
+                .fontColor(ApplicationTheme.color(this.capsuleBackground, '#EEF2F8'))
               Blank()
               Text(`${this.positions.length} 只`)
                 .fontSize(11)
-                .fontColor('#758196')
+                .fontColor(ApplicationTheme.color(this.capsuleBackground, '#758196'))
             }
             .width('100%')
 
@@ -210,10 +212,10 @@ export struct PositionsPage {
                     Text(this.nameFor(position.symbolId))
                       .fontSize(15)
                       .fontWeight(FontWeight.Bold)
-                      .fontColor('#E7EBF2')
+                      .fontColor(ApplicationTheme.color(this.capsuleBackground, '#E7EBF2'))
                     Text(`${this.codeFor(position.symbolId)} · ${this.privacyMode ? '数量已隐藏' : `${position.quantity} 股`}`)
                       .fontSize(11)
-                      .fontColor('#758196')
+                      .fontColor(ApplicationTheme.color(this.capsuleBackground, '#758196'))
                   }
                   .layoutWeight(1)
                   .alignItems(HorizontalAlign.Start)
@@ -221,7 +223,7 @@ export struct PositionsPage {
                     Text(this.marketValueText(position))
                       .fontSize(15)
                       .fontWeight(FontWeight.Medium)
-                      .fontColor('#F2F5FA')
+                      .fontColor(ApplicationTheme.color(this.capsuleBackground, '#F2F5FA'))
                     Text(this.profitText(position))
                       .fontSize(11)
                       .fontColor(this.profitColor(this.profit(position)))
@@ -232,25 +234,25 @@ export struct PositionsPage {
                 Row() {
                   Text(this.privacyMode ? '成本价 ••••' : `成本价 ${position.costPrice}`)
                     .fontSize(11)
-                    .fontColor('#8290A6')
+                    .fontColor(ApplicationTheme.color(this.capsuleBackground, '#8290A6'))
                   Blank()
                   Button('编辑持仓')
                     .height(38)
                     .fontSize(11)
-                    .backgroundColor('#243554')
+                    .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#243554'))
                     .onClick(() => this.onOpenEditor(position.symbolId))
                 }
                 .width('100%')
               }
               .padding(14)
               .width('100%')
-              .backgroundColor('#171D27')
+              .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#171D27'))
               .borderRadius(12)
             }, (position: PositionRecord) => position.symbolId)
           }
           .padding(16)
           .width('100%')
-          .backgroundColor('#121720')
+          .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#121720'))
           .borderRadius(18)
         }
 
@@ -258,10 +260,10 @@ export struct PositionsPage {
           Text('本地数据说明')
             .fontSize(12)
             .fontWeight(FontWeight.Medium)
-            .fontColor('#AAB5C6')
+            .fontColor(ApplicationTheme.color(this.capsuleBackground, '#AAB5C6'))
           Text(`${this.positionStatus}；不会上传、同步或发起交易。`)
             .fontSize(10)
-            .fontColor('#68758A')
+            .fontColor(ApplicationTheme.color(this.capsuleBackground, '#68758A'))
         }
         .alignItems(HorizontalAlign.Start)
         .padding({ bottom: 24 })
@@ -272,6 +274,6 @@ export struct PositionsPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#0C1017')
+    .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#0C1017'))
   }
 }

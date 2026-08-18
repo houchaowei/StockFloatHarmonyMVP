@@ -122,6 +122,11 @@ export enum CapsuleMetric {
   POSITION_PROFIT = 'positionProfit'
 }
 
+export enum CapsuleBackground {
+  BLACK = 'black',
+  WHITE = 'white'
+}
+
 export class CapsuleDimensions {
   static collapsedWidth(size: CapsuleSize): number {
     if (size === CapsuleSize.COMPACT) {

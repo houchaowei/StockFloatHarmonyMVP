@@ -1,9 +1,11 @@
 import { PriceAlert } from '../model/PersonalModels'
 import { personalStore } from '../model/PersonalStore'
 import { StockQuote, StockSymbol } from '../model/StockModels'
+import { ApplicationTheme } from '../model/ApplicationTheme'
 
 @Component
 export struct AlertsPage {
+  @StorageLink('capsuleBackground') capsuleBackground: string = 'black'
   @StorageLink('priceAlerts') priceAlerts: Array<PriceAlert> = []
   @StorageLink('watchlist') watchlist: Array<StockSymbol> = []
   @StorageLink('quotes') quotes: Array<StockQuote> = []
@@ -68,17 +70,17 @@ export struct AlertsPage {
             Text('价格提醒')
               .fontSize(28)
               .fontWeight(FontWeight.Bold)
-              .fontColor('#F7F9FC')
+              .fontColor(ApplicationTheme.color(this.capsuleBackground, '#F7F9FC'))
             Text('集中管理所有股票触发规则')
               .fontSize(13)
-              .fontColor('#8893A6')
+              .fontColor(ApplicationTheme.color(this.capsuleBackground, '#8893A6'))
           }
           .alignItems(HorizontalAlign.Start)
           Blank()
           Button('新建提醒')
             .height(44)
             .enabled(this.watchlist.length > 0)
-            .backgroundColor('#346DFF')
+            .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#346DFF'))
             .onClick(() => this.onOpenEditor('', ''))
         }
         .width('100%')
@@ -89,10 +91,10 @@ export struct AlertsPage {
               Text(`已启用 ${this.enabledCount()} 条`)
                 .fontSize(17)
                 .fontWeight(FontWeight.Bold)
-                .fontColor('#EEF2F8')
+                .fontColor(ApplicationTheme.color(this.capsuleBackground, '#EEF2F8'))
               Text(this.alertStatus)
                 .fontSize(11)
-                .fontColor(this.alertStatus.includes('未开启') || this.alertStatus.includes('失败') ? '#FFB366' : '#8290A6')
+                .fontColor(this.alertStatus.includes('未开启') || this.alertStatus.includes('失败') ? ApplicationTheme.color(this.capsuleBackground, '#FFB366') : ApplicationTheme.color(this.capsuleBackground, '#8290A6'))
                 .maxLines(2)
             }
             .layoutWeight(1)
@@ -105,29 +107,29 @@ export struct AlertsPage {
           .width('100%')
           Text('提醒由本机刷新行情时判断；系统挂起、无网络或刷新停止时不保证触发。')
             .fontSize(11)
-            .fontColor('#FFB366')
+            .fontColor(ApplicationTheme.color(this.capsuleBackground, '#FFB366'))
             .width('100%')
         }
         .padding(16)
         .width('100%')
-        .backgroundColor('#171D27')
+        .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#171D27'))
         .borderRadius(18)
 
         Row({ space: 8 }) {
           Button(`全部 ${this.priceAlerts.length}`)
             .height(40)
             .fontSize(11)
-            .backgroundColor(this.filter === 'all' ? '#346DFF' : '#252E3B')
+            .backgroundColor(this.filter === 'all' ? ApplicationTheme.color(this.capsuleBackground, '#346DFF') : ApplicationTheme.color(this.capsuleBackground, '#252E3B'))
             .onClick(() => this.filter = 'all')
           Button(`已启用 ${this.enabledCount()}`)
             .height(40)
             .fontSize(11)
-            .backgroundColor(this.filter === 'enabled' ? '#346DFF' : '#252E3B')
+            .backgroundColor(this.filter === 'enabled' ? ApplicationTheme.color(this.capsuleBackground, '#346DFF') : ApplicationTheme.color(this.capsuleBackground, '#252E3B'))
             .onClick(() => this.filter = 'enabled')
           Button(`已停用 ${this.priceAlerts.length - this.enabledCount()}`)
             .height(40)
             .fontSize(11)
-            .backgroundColor(this.filter === 'disabled' ? '#346DFF' : '#252E3B')
+            .backgroundColor(this.filter === 'disabled' ? ApplicationTheme.color(this.capsuleBackground, '#346DFF') : ApplicationTheme.color(this.capsuleBackground, '#252E3B'))
             .onClick(() => this.filter = 'disabled')
         }
         .width('100%')
@@ -136,24 +138,24 @@ export struct AlertsPage {
           Column({ space: 12 }) {
             Text('◎')
               .fontSize(34)
-              .fontColor('#4D5B70')
+              .fontColor(ApplicationTheme.color(this.capsuleBackground, '#4D5B70'))
             Text(this.priceAlerts.length === 0 ? '还没有价格提醒' : '当前筛选下没有提醒')
               .fontSize(16)
               .fontWeight(FontWeight.Medium)
-              .fontColor('#DCE2EC')
+              .fontColor(ApplicationTheme.color(this.capsuleBackground, '#DCE2EC'))
             Text('可以为股票设置到价、涨幅或跌幅提醒')
               .fontSize(12)
-              .fontColor('#758196')
+              .fontColor(ApplicationTheme.color(this.capsuleBackground, '#758196'))
             if (this.priceAlerts.length === 0) {
               Button('创建第一条提醒')
                 .height(44)
-                .backgroundColor('#346DFF')
+                .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#346DFF'))
                 .onClick(() => this.onOpenEditor('', ''))
             }
           }
           .padding(32)
           .width('100%')
-          .backgroundColor('#121720')
+          .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#121720'))
           .borderRadius(18)
         }
 
@@ -164,10 +166,10 @@ export struct AlertsPage {
                 Text(this.nameFor(symbolId))
                   .fontSize(16)
                   .fontWeight(FontWeight.Bold)
-                  .fontColor('#EEF2F8')
+                  .fontColor(ApplicationTheme.color(this.capsuleBackground, '#EEF2F8'))
                 Text(`${this.codeFor(symbolId)} · ${this.alertsFor(symbolId).length} 条规则`)
                   .fontSize(11)
-                  .fontColor('#758196')
+                  .fontColor(ApplicationTheme.color(this.capsuleBackground, '#758196'))
               }
               .alignItems(HorizontalAlign.Start)
               .layoutWeight(1)
@@ -185,10 +187,10 @@ export struct AlertsPage {
                   Text(`${alert.kindText()} ${this.privacyMode ? '••••' : alert.thresholdText()}`)
                     .fontSize(13)
                     .fontWeight(FontWeight.Medium)
-                    .fontColor('#DCE2EC')
+                    .fontColor(ApplicationTheme.color(this.capsuleBackground, '#DCE2EC'))
                   Text(`${alert.repeatText()} · ${alert.enabled ? '已启用' : '已停用'}`)
                     .fontSize(10)
-                    .fontColor(alert.enabled ? '#4AD7A5' : '#778398')
+                    .fontColor(alert.enabled ? ApplicationTheme.color(this.capsuleBackground, '#4AD7A5') : ApplicationTheme.color(this.capsuleBackground, '#778398'))
                 }
                 .layoutWeight(1)
                 .alignItems(HorizontalAlign.Start)
@@ -199,24 +201,24 @@ export struct AlertsPage {
                 Button('编辑')
                   .height(38)
                   .fontSize(11)
-                  .backgroundColor('#243554')
+                  .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#243554'))
                   .onClick(() => this.onOpenEditor(alert.symbolId, alert.id))
               }
               .padding(12)
               .width('100%')
-              .backgroundColor('#171D27')
+              .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#171D27'))
               .borderRadius(12)
             }, (alert: PriceAlert) => alert.id)
           }
           .padding(16)
           .width('100%')
-          .backgroundColor('#121720')
+          .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#121720'))
           .borderRadius(18)
         }, (symbolId: string) => symbolId)
 
         Text('隐私模式下股票名称和提醒阈值会在列表中隐藏。')
           .fontSize(10)
-          .fontColor('#68758A')
+          .fontColor(ApplicationTheme.color(this.capsuleBackground, '#68758A'))
           .padding({ bottom: 24 })
       }
       .padding({ left: 18, right: 18, top: this.topSafeHeight + 24 })
@@ -224,6 +226,6 @@ export struct AlertsPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#0C1017')
+    .backgroundColor(ApplicationTheme.color(this.capsuleBackground, '#0C1017'))
   }
 }

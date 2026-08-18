@@ -11,6 +11,7 @@ const required = [
   'entry/src/main/module.json5',
   'entry/src/main/ets/model/StockModels.ets',
   'entry/src/main/ets/model/PersonalModels.ets',
+  'entry/src/main/ets/model/ApplicationTheme.ets',
   'entry/src/main/ets/model/PersonalStore.ets',
   'entry/src/main/ets/model/TencentQuoteProvider.ets',
   'entry/src/main/ets/model/TencentStockSearchProvider.ets',
@@ -209,11 +210,15 @@ requireContracts('provider failover', compositeProvider, ['TencentQuoteProvider'
 const personal = read('entry/src/main/ets/model/PersonalStore.ets')
 requireContracts('personalization', personal, [
   'rotation_enabled', 'capsule_size', 'capsule_opacity', 'capsule_metric', 'privacy_mode',
+  'capsule_background',
   'reverse_colors', 'auto_restore_float', 'trading_refresh_seconds', 'status_notification_enabled',
   'price_alerts_v1', 'positions_v1', 'price_history_v1', 'requestEnableNotification',
   'AlertRepeatMode.DAILY', 'cooldownMinutes', 'publishStatusQuote', 'recordQuotes',
   'wantAgent.getWantAgent', 'WantAgentFlags.UPDATE_PRESENT_FLAG', 'request.wantAgent = launchAgent',
   'updateAlert', 'removeAlertsForSymbol'
+])
+requireContracts('application theme', read('entry/src/main/ets/model/ApplicationTheme.ets'), [
+  'CapsuleBackground.WHITE', "case '#0C1017'", "case '#121720'", "case '#171D27'"
 ])
 
 const manager = read('entry/src/main/ets/model/FloatWindowManager.ets')
@@ -236,7 +241,7 @@ requireContracts('quote store', store, [
 const capsule = read('entry/src/main/ets/components/QuoteCapsule.ets')
 requireContracts('capsule', capsule, [
   'MiniSparkline', 'positionRecord', 'privacyMode', 'reverseColors', 'opacityPercent',
-  'metricMode', 'QuoteFreshnessHelper', 'width(44)', 'accessibilityText',
+  'metricMode', 'backgroundStyle', 'CapsuleBackground.WHITE', 'QuoteFreshnessHelper', 'width(44)', 'accessibilityText',
   'PanGesture({ distance: 8 })', 'LongPressGesture({ repeat: false, duration: 700 })',
   'onAction(() => this.onToggle())', '拖动可移动展开悬浮窗', '顶部拖动',
   '今开', '最高', '最低', '行情'
@@ -258,8 +263,8 @@ if (floatPage.includes('LongPressGesture') || floatPage.includes('PanGesture')) 
 
 const indexPage = read('entry/src/main/ets/pages/Index.ets')
 requireContracts('management shell', indexPage, [
-  'Tabs({ barPosition: BarPosition.End', '自选', '提醒', '持仓', '设置',
-  'AlertEditorPage', 'PositionEditorPage', 'managementRoute', 'barHeight', 'bottomSafeHeight'
+  'navigationItem', 'layoutWeight(1)', 'nav_watchlist', 'nav_alerts', 'nav_positions', 'nav_settings',
+  '自选', '提醒', '持仓', '设置', 'AlertEditorPage', 'PositionEditorPage', 'managementRoute', 'bottomSafeHeight'
 ])
 requireContracts('management back handling', read('entry/src/main/ets/entryability/EntryAbility.ets'), [
   "AppStorage.setOrCreate<string>('managementRoute', 'root')", 'onBackPressed(): boolean',
@@ -284,7 +289,7 @@ requireContracts('position editor UI', read('entry/src/main/ets/pages/PositionEd
 ])
 requireContracts('settings UI', read('entry/src/main/ets/pages/SettingsPage.ets'), [
   '悬浮胶囊', '行情与通知', '外观与隐私', '尺寸', '透明度', '展示内容',
-  '常驻行情通知', '启动时恢复悬浮', 'ToggleType.Switch'
+  '应用与胶囊背景', '黑色背景', '白色背景', '常驻行情通知', '启动时恢复悬浮', 'ToggleType.Switch'
 ])
 
 if (process.argv.includes('--live')) {

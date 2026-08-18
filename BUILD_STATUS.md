@@ -1,8 +1,13 @@
 # Build status
 
-最后检查：2026-08-17
+最后检查：2026-08-18
 
-## v0.3.0 已完成
+## v0.3.1 已完成
+
+- 应用内页面、输入框、底部导航、系统栏和悬浮胶囊共用黑色/白色背景设置，切换后立即生效并持久化。
+- 底部导航改为四项等宽独立布局和统一 SVG 图标，规避真机字体字形基线造成的错位。
+- 暗色输入框统一提高 placeholder 对比度并调整输入字号。
+- 真机返回短时任务校验错误 `9900001/9900002` 时停止重复申请、标记后台暂停并显示可理解的系统限制状态。
 
 - 仓库签名配置保持可移植的空配置，不包含本机路径、证书或口令；本机通过 Git 忽略的签名文件安全注入。
 - 腾讯主行情源与新浪备用行情源均有独立 GB18030 解析器；主源部分缺失时仅请求缺失股票。
@@ -22,15 +27,16 @@
 ## 已通过的门禁
 
 - `node tools/verify.mjs`：通过。覆盖安全签名、双源解析、行情新鲜度、提醒阈值、持久化、底部导航与二级页面 UI 合同。
-- `node tools/verify.mjs --live`：通过。2026-08-17 已验证腾讯主源和新浪备用源均可返回并解析贵州茅台、平安银行、宁德时代真实行情。
+- `node tools/verify.mjs --live`：通过。2026-08-18 已验证腾讯主源和新浪备用源均可返回并解析贵州茅台、平安银行、宁德时代真实行情。
 - Hvigor 6.24.4 类型检查：通过。
 - `CompileArkTS`、`PackageHap`、`PackingCheck`：通过，无 ArkTS 警告。
-- 已签名 HAP：`entry/build/default/outputs/default/entry-default-signed.hap`。
+- v0.3.1 Release 已签名 HAP：`entry/build/default/outputs/default/entry-default-signed.hap`。
+- Release SHA-256：`d050ee0ea5167776535fe239ebcd47b9c502208b68cc87245100bf9225b4ffab`。
 - 本机 Hvigor 已执行 `SignHap`，无 `No signingConfig found` 提示；证书路径和口令仅存在于 Git 忽略的 `.signing/local-signing.json`。
 
 ## 真机门禁
 
-2026-08-17 已在连接的 HarmonyOS 真机完成签名包安装及 `EntryAbility` 启动，应用进程正常运行；安装版本为 `0.3.0`（`versionCode 3000000`），调试 Profile 已包含 `SYSTEM_FLOAT_WINDOW` ACL。
+2026-08-17 已在连接的 HarmonyOS 真机完成签名包安装及 `EntryAbility` 启动，应用进程正常运行；当时安装版本为 `0.3.0`，调试 Profile 已包含 `SYSTEM_FLOAT_WINDOW` ACL。v0.3.1 已完成同配置 Release 签名构建，待安装包发布后复测统一主题与底栏布局。
 
 仓库不提交本机签名配置。当前开发机使用 `.signing/local-signing.json` 进行安全的本地签名；换电脑后仍需在 DevEco Studio 配置开发者签名与 `SYSTEM_FLOAT_WINDOW` 调试 ACL，再按 `README.md` 的 12 项功能验收执行。
 

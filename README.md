@@ -2,10 +2,35 @@
 
 基于 MIT 开源项目 `StockFloatMVP` 思路实现的 HarmonyOS NEXT / ArkTS 个人 A 股悬浮行情助手。
 
+[![HarmonyOS NEXT](https://img.shields.io/badge/HarmonyOS-NEXT-0A59F7)](https://developer.huawei.com/consumer/cn/)
+[![Release](https://img.shields.io/github/v/release/houchaowei/StockFloatHarmonyMVP)](https://github.com/houchaowei/StockFloatHarmonyMVP/releases/latest)
+[![License](https://img.shields.io/github/license/houchaowei/StockFloatHarmonyMVP)](LICENSE)
+
+## 产品截图
+
+![自选行情与应用内预览](assets/store-screenshots/stockfloat-intro-1.png)
+
+![桌面全局悬浮胶囊](assets/store-screenshots/stockfloat-intro-2.png)
+
+![展开胶囊与快捷行情操作](assets/store-screenshots/stockfloat-intro-3.png)
+
+## Release 下载
+
+当前稳定版本为 **v0.3.1**。可从 [GitHub Releases](https://github.com/houchaowei/StockFloatHarmonyMVP/releases/latest) 下载签名 HAP。
+
+Release 构建用于个人真机测试；首次安装或覆盖安装仍受设备版本、签名 Profile 与 `SYSTEM_FLOAT_WINDOW` ACL 限制。若系统拒绝全局悬浮权限，应用内行情、自选、提醒、持仓和胶囊预览仍可正常使用。
+
+### v0.3.1 更新
+
+- 黑色/白色背景统一控制主应用、输入框、底部导航、系统栏和悬浮胶囊。
+- 底部导航改为等宽独立布局与统一 SVG 图标，修复真机对齐问题。
+- 提高暗色输入框 placeholder 与正文文字对比度。
+- 真机拒绝短时后台任务时正确降级，不再显示 `9900002` 原始错误。
+
 ## 已实现
 
 - `WindowType.TYPE_FLOAT` 全局悬浮窗口，主应用退到后台后仍可显示
-- 紧凑、标准、大号三档胶囊尺寸，透明度及展示指标可调
+- 紧凑、标准、大号三档胶囊尺寸；应用与胶囊共用黑/白背景设置，透明度及展示指标可调
 - 拖动、边界限制、松手自动吸附左右边缘、位置持久化
 - 横竖屏、分屏及折叠形态变化后自动重新约束位置
 - 单击中间行情区展开；展开后可收起、刷新、切换股票和关闭
@@ -82,7 +107,7 @@ DevEco / SDK 版本的具体界面可能不同。通用流程是：
 9. 切换底部“提醒”，新建高于/低于价格及涨/跌幅提醒，验证单次、重复、每日三种模式；通知未授权时规则仍保存，自选列表“设提醒”可直接带入股票。
 10. 切换底部“持仓”，新增或编辑成本价与数量；汇总页和展开胶囊显示持仓盈亏，隐私模式下名称、代码、价格、阈值和盈亏均被遮挡。
 11. 断网后刷新保留最后价格并标记缓存/过期；恢复网络后主源或备用源可更新。
-12. 切换底部“设置”，调整尺寸、透明度、展示指标、涨跌颜色、轮播和刷新间隔，悬浮窗立即或下次刷新生效；从提醒/持仓编辑页使用系统返回可回到对应列表。
+12. 切换底部“设置”，调整尺寸、黑/白背景、透明度、展示指标、涨跌颜色、轮播和刷新间隔，悬浮窗立即或下次刷新生效；从提醒/持仓编辑页使用系统返回可回到对应列表。
 
 ## 自动验证
 
@@ -116,6 +141,7 @@ entry/src/main/ets/
 ├── components/QuoteCapsule.ets       胶囊和展开卡片 UI
 ├── entryability/EntryAbility.ets     应用入口和生命周期
 ├── model/FloatWindowManager.ets      TYPE_FLOAT、拖动、吸边、持久化
+├── model/ApplicationTheme.ets        应用与胶囊统一黑白主题
 ├── model/QuoteStore.ets              自选、缓存、刷新、轮播、交易日识别
 ├── model/PersonalModels.ets          提醒、持仓、走势和胶囊配置模型
 ├── model/PersonalStore.ets           个性化持久化、提醒与通知
@@ -144,4 +170,4 @@ entry/src/main/ets/
 
 ## 与原版的关系
 
-参考实现：`/Users/houchaowei/Documents/github/StockFloatMVP`。本项目保留了其数据源隔离、交易阶段刷新、失败保留旧值、轮播和自选持久化设计，并把 macOS 圆形窗口重新实现为 HarmonyOS 手机胶囊式全局窗口。
+本项目参考 MIT 开源版 `StockFloatMVP` 的实现思路，保留了其数据源隔离、交易阶段刷新、失败保留旧值、轮播和自选持久化设计，并把 macOS 圆形窗口重新实现为 HarmonyOS 手机胶囊式全局窗口。

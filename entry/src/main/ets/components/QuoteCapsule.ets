@@ -1,5 +1,5 @@
 import { MiniSparkline } from './MiniSparkline'
-import { CapsuleMetric, PositionRecord } from '../model/PersonalModels'
+import { CapsuleBackground, CapsuleMetric, PositionRecord } from '../model/PersonalModels'
 import { ChinaMarketCalendar, MarketPhase, QuoteFreshness, QuoteFreshnessHelper, StockQuote } from '../model/StockModels'
 
 @Component
@@ -18,6 +18,7 @@ export struct QuoteCapsule {
   @Prop reverseColors: boolean = false
   @Prop opacityPercent: number = 95
   @Prop metricMode: string = CapsuleMetric.BOTH
+  @Prop backgroundStyle: string = CapsuleBackground.BLACK
   onPrevious: () => void = () => {}
   onNext: () => void = () => {}
   onToggle: () => void = () => {}
@@ -40,12 +41,46 @@ export struct QuoteCapsule {
 
   private changeColor(): ResourceColor {
     if (this.privacyMode || this.quote === undefined || this.quote.changePercent === 0) {
-      return '#B7BFCE'
+      return this.isWhiteBackground() ? '#596575' : '#B7BFCE'
     }
     if (this.reverseColors) {
-      return this.quote.changePercent > 0 ? '#21C78B' : '#FF5A63'
+      return this.quote.changePercent > 0 ? this.riseColor('#087A55', '#21C78B') :
+        this.riseColor('#C92F38', '#FF5A63')
     }
-    return this.quote.changePercent > 0 ? '#FF5A63' : '#21C78B'
+    return this.quote.changePercent > 0 ? this.riseColor('#C92F38', '#FF5A63') :
+      this.riseColor('#087A55', '#21C78B')
+  }
+
+  private isWhiteBackground(): boolean {
+    return this.backgroundStyle === CapsuleBackground.WHITE
+  }
+
+  private riseColor(light: ResourceColor, dark: ResourceColor): ResourceColor {
+    return this.isWhiteBackground() ? light : dark
+  }
+
+  private primaryTextColor(): ResourceColor {
+    return this.isWhiteBackground() ? '#111722' : '#F5F7FB'
+  }
+
+  private secondaryTextColor(): ResourceColor {
+    return this.isWhiteBackground() ? '#4E5A6A' : '#AAB2C1'
+  }
+
+  private mutedTextColor(): ResourceColor {
+    return this.isWhiteBackground() ? '#667180' : '#8994A7'
+  }
+
+  private controlBackgroundColor(): ResourceColor {
+    return this.isWhiteBackground() ? '#E5EAF1E8' : '#26303DDD'
+  }
+
+  private actionBackgroundColor(): ResourceColor {
+    return this.isWhiteBackground() ? '#E5EAF1' : '#2B3340'
+  }
+
+  private capsuleBorderColor(): ResourceColor {
+    return this.isWhiteBackground() ? '#9EABB966' : '#52607183'
   }
 
   private signed(value: number, digits: number): string {
@@ -136,13 +171,14 @@ export struct QuoteCapsule {
   }
 
   private capsuleBackgroundColor(): ResourceColor {
+    const white: boolean = this.isWhiteBackground()
     if (this.opacityPercent >= 95) {
-      return '#F20C1017'
+      return white ? '#F2FFFFFF' : '#F2000000'
     }
     if (this.opacityPercent >= 85) {
-      return '#D90C1017'
+      return white ? '#D9FFFFFF' : '#D9000000'
     }
-    return '#B30C1017'
+    return white ? '#B3FFFFFF' : '#B3000000'
   }
 
   private positionProfitText(): string {
@@ -164,11 +200,11 @@ export struct QuoteCapsule {
             Circle()
               .width(24)
               .height(24)
-              .fill('#26303DDD')
+              .fill(this.controlBackgroundColor())
             Text('‹')
               .fontSize(15)
               .fontWeight(FontWeight.Medium)
-              .fontColor('#BFC9D8')
+              .fontColor(this.secondaryTextColor())
           }
             .width(44)
             .height(44)
@@ -181,11 +217,11 @@ export struct QuoteCapsule {
               Text(this.displayName())
                 .fontSize(12)
                 .fontWeight(FontWeight.Bold)
-                .fontColor('#F5F7FB')
+                .fontColor(this.primaryTextColor())
                 .maxLines(1)
               Text(`${this.index + 1}/${Math.max(this.total, 1)}`)
                 .fontSize(10)
-                .fontColor('#8E98AA')
+                .fontColor(this.mutedTextColor())
             }
             .width('100%')
             .justifyContent(FlexAlign.Center)
@@ -194,7 +230,7 @@ export struct QuoteCapsule {
               Text(this.displayPrice())
                 .fontSize(16)
                 .fontWeight(FontWeight.Bold)
-                .fontColor('#FFFFFF')
+                .fontColor(this.primaryTextColor())
               Text(this.displayChange())
                 .fontSize(11)
                 .fontWeight(FontWeight.Medium)
@@ -221,11 +257,11 @@ export struct QuoteCapsule {
             Circle()
               .width(24)
               .height(24)
-              .fill('#26303DDD')
+              .fill(this.controlBackgroundColor())
             Text('›')
               .fontSize(15)
               .fontWeight(FontWeight.Medium)
-              .fontColor('#BFC9D8')
+              .fontColor(this.secondaryTextColor())
           }
             .width(44)
             .height(44)
@@ -241,21 +277,21 @@ export struct QuoteCapsule {
             Text('≡')
               .fontSize(18)
               .fontWeight(FontWeight.Bold)
-              .fontColor('#697386')
+              .fontColor(this.mutedTextColor())
             Column({ space: 2 }) {
               Text(this.displayName())
                 .fontSize(17)
                 .fontWeight(FontWeight.Bold)
-                .fontColor('#F5F7FB')
+                .fontColor(this.primaryTextColor())
               Text(this.privacyMode ? '代码已隐藏' : (this.quote?.symbol.displayCode ?? 'StockFloat'))
                 .fontSize(10)
-                .fontColor('#8E98AA')
+                .fontColor(this.mutedTextColor())
             }
             .alignItems(HorizontalAlign.Start)
             Blank()
             Text(`${this.index + 1} / ${Math.max(this.total, 1)}`)
               .fontSize(11)
-              .fontColor('#8E98AA')
+              .fontColor(this.mutedTextColor())
           }
           .width('100%')
           .height(52)
@@ -274,7 +310,7 @@ export struct QuoteCapsule {
                 Text(this.expandedPrice())
                   .fontSize(32)
                   .fontWeight(FontWeight.Bold)
-                  .fontColor('#FFFFFF')
+                  .fontColor(this.primaryTextColor())
                 Column({ space: 2 }) {
                   Text(this.privacyMode || this.quote === undefined ? '••••' : this.signed(this.quote.change, 2))
                     .fontSize(13)
@@ -292,21 +328,22 @@ export struct QuoteCapsule {
               MiniSparkline({
                 values: this.history,
                 lineColor: this.changeColor(),
-                hidden: this.privacyMode
+                hidden: this.privacyMode,
+                lightBackground: this.isWhiteBackground()
               })
 
               Row() {
                 Text(`今开 ${this.priceMetric(this.quote?.open)}`)
                   .fontSize(10)
-                  .fontColor('#98A4B7')
+                  .fontColor(this.secondaryTextColor())
                 Blank()
                 Text(`最高 ${this.priceMetric(this.quote?.high)}`)
                   .fontSize(10)
-                  .fontColor('#FF8990')
+                  .fontColor(this.isWhiteBackground() ? '#B92731' : '#FF8990')
                 Blank()
                 Text(`最低 ${this.priceMetric(this.quote?.low)}`)
                   .fontSize(10)
-                  .fontColor('#5DDBAA')
+                  .fontColor(this.isWhiteBackground() ? '#087A55' : '#5DDBAA')
               }
               .width('100%')
 
@@ -324,20 +361,35 @@ export struct QuoteCapsule {
                   Circle().width(6).height(6).fill(QuoteFreshnessHelper.color(this.freshness()))
                   Text(`${this.freshness()} · ${this.quote?.source ?? '--'}`)
                     .fontSize(10)
-                    .fontColor('#AAB2C1')
+                    .fontColor(this.secondaryTextColor())
                     .maxLines(1)
                 }
                 Blank()
                 Text(`行情 ${this.quoteTime()}`)
                   .fontSize(10)
-                  .fontColor('#697386')
+                  .fontColor(this.mutedTextColor())
               }
               .width('100%')
 
               Row({ space: 8 }) {
-                Button('上一只').height(40).accessibilityText('上一只股票').onClick(() => this.onPrevious())
-                Button('刷新').height(40).accessibilityText('刷新当前行情').onClick(() => this.onRefresh())
-                Button('下一只').height(40).accessibilityText('下一只股票').onClick(() => this.onNext())
+                Button('上一只')
+                  .height(40)
+                  .fontColor(this.primaryTextColor())
+                  .backgroundColor(this.actionBackgroundColor())
+                  .accessibilityText('上一只股票')
+                  .onClick(() => this.onPrevious())
+                Button('刷新')
+                  .height(40)
+                  .fontColor(this.primaryTextColor())
+                  .backgroundColor(this.actionBackgroundColor())
+                  .accessibilityText('刷新当前行情')
+                  .onClick(() => this.onRefresh())
+                Button('下一只')
+                  .height(40)
+                  .fontColor(this.primaryTextColor())
+                  .backgroundColor(this.actionBackgroundColor())
+                  .accessibilityText('下一只股票')
+                  .onClick(() => this.onNext())
               }
               .width('100%')
               .justifyContent(FlexAlign.SpaceBetween)
@@ -345,18 +397,18 @@ export struct QuoteCapsule {
               Row() {
                 Text('顶部拖动 · 松手吸边')
                   .fontSize(10)
-                  .fontColor('#697386')
+                  .fontColor(this.mutedTextColor())
                 Blank()
                 Button('收起')
                   .fontSize(11)
-                  .fontColor('#DCE2EC')
-                  .backgroundColor('#2B3340')
+                  .fontColor(this.primaryTextColor())
+                  .backgroundColor(this.actionBackgroundColor())
                   .accessibilityText('收起行情卡片')
                   .onClick(() => this.onToggle())
                 Button('关闭')
                   .fontSize(11)
-                  .fontColor('#FF7A82')
-                  .backgroundColor('#34232A')
+                  .fontColor(this.isWhiteBackground() ? '#B92731' : '#FF7A82')
+                  .backgroundColor(this.isWhiteBackground() ? '#F6E5E7' : '#34232A')
                   .accessibilityText('关闭全局悬浮胶囊')
                   .onClick(() => this.onClose())
               }
@@ -377,7 +429,7 @@ export struct QuoteCapsule {
     .height('100%')
     .backgroundColor(this.capsuleBackgroundColor())
     .borderRadius(this.expanded ? 22 : 36)
-    .border({ width: 1, color: '#52607183' })
+    .border({ width: 1, color: this.capsuleBorderColor() })
     .shadow({ radius: 14, color: '#55000000', offsetY: 6 })
   }
 }

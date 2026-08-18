@@ -4,6 +4,7 @@ import { BusinessError } from '@kit.BasicServicesKit'
 import { floatWindowManager } from '../model/FloatWindowManager'
 import { quoteStore } from '../model/QuoteStore'
 import { personalStore } from '../model/PersonalStore'
+import { ApplicationTheme } from '../model/ApplicationTheme'
 
 export default class EntryAbility extends UIAbility {
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
@@ -48,14 +49,10 @@ export default class EntryAbility extends UIAbility {
   private async applyEdgeToEdgeLayout(windowStage: window.WindowStage): Promise<void> {
     try {
       const mainWindow: window.Window = await windowStage.getMainWindow()
+      const backgroundStyle: string = AppStorage.get<string>('capsuleBackground') ?? 'black'
       await mainWindow.setWindowLayoutFullScreen(true)
-      await mainWindow.setWindowBackgroundColor('#0C1017')
-      await mainWindow.setWindowSystemBarProperties({
-        statusBarColor: '#0C1017',
-        statusBarContentColor: '#F7F9FC',
-        navigationBarColor: '#0C1017',
-        navigationBarContentColor: '#F7F9FC'
-      })
+      ApplicationTheme.bindMainWindow(mainWindow)
+      await ApplicationTheme.applyWindow(backgroundStyle)
       this.publishSafeInsets(mainWindow)
       mainWindow.on('avoidAreaChange', () => this.publishSafeInsets(mainWindow))
     } catch (error) {
